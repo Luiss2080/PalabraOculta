@@ -67,10 +67,19 @@ function dibujarTeclado() {
   ABECEDARIO.forEach((letra) => {
     const btn = document.createElement('button');
     btn.textContent = letra;
+    btn.dataset.letra = letra;
     btn.addEventListener('click', () => intentarLetra(letra, btn));
     tecladoEl.appendChild(btn);
   });
 }
+
+// Soporte de teclado físico: escribir la letra hace lo mismo que hacer click en el botón.
+document.addEventListener('keydown', (e) => {
+  const letra = e.key.toUpperCase();
+  if (!ABECEDARIO.includes(letra)) return;
+  const btn = tecladoEl.querySelector(`button[data-letra="${letra}"]`);
+  if (btn && !btn.disabled) intentarLetra(letra, btn);
+});
 
 function intentarLetra(letra, btn) {
   if (juegoTerminado) return;
