@@ -6,6 +6,13 @@
   color: var(--text-secondary);
 }
 
+.parallax-container {
+  width: 100%;
+  max-width: 600px;
+  display: flex;
+  justify-content: center;
+}
+
 .game-info {
   text-align: center;
   margin-bottom: 1rem;
