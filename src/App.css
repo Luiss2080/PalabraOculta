@@ -1,0 +1,80 @@
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.game-info {
+  text-align: center;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+}
+
+.word-container {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 2rem 0;
+  font-size: 2.5rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  color: var(--text-primary);
+  flex-wrap: wrap;
+}
+
+.word-letter {
+  border-bottom: 3px solid var(--text-primary);
+  min-width: 2.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.word-letter.visible {
+  border-bottom-color: transparent;
+}
+
+.result-modal {
+  background: var(--surface-color);
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  margin-top: 1rem;
+  border: 2px solid;
+}
+
+.result-modal.won {
+  border-color: var(--success-color);
+  background: rgba(72, 199, 116, 0.1);
+}
+
+.result-modal.lost {
+  border-color: var(--danger-color);
+  background: rgba(241, 70, 104, 0.1);
+}
+
+.category-selector {
+  margin-top: 1rem;
+}
+
+.cat-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.cat-buttons button {
+  background: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.cat-buttons button:hover {
+  background: var(--primary-hover);
+}

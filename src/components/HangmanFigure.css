@@ -1,0 +1,20 @@
+.hangman-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 1rem 0;
+  position: relative;
+}
+
+.figure-part {
+  opacity: 0;
+  transition: opacity 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.figure-part.visible {
+  opacity: 1;
+}
+
+svg {
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.1));
+}

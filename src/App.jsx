@@ -1,122 +1,87 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useEffect } from 'react';
+import { useGameEngine } from './hooks/useGameEngine';
+import HangmanFigure from './components/HangmanFigure';
+import Keyboard from './components/Keyboard';
+import { PALABRAS } from './data/dictionary';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const {
+    word,
+    category,
+    guessedLetters,
+    mistakes,
+    status,
+    stats,
+    startNewGame,
+    guess,
+    maxMistakes
+  } = useGameEngine();
+
+  // Initialize game on first load
+  useEffect(() => {
+    if (status === 'idle') {
+      startNewGame();
+    }
+  }, [status, startNewGame]);
+
+  const renderWord = () => {
+    return word.split('').map((letter, i) => (
+      <span key={i} className={`word-letter ${guessedLetters.has(letter) || status === 'lost' ? 'visible' : ''}`}>
+        {guessedLetters.has(letter) || status === 'lost' ? letter : '_'}
+      </span>
+    ));
+  };
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div className="glass-panel">
+      <h1>🎯 Ahorcado Premium</h1>
+      
+      <div className="stats-header">
+        <span>Victorias: {stats.wins}</span>
+        <span>Racha: {stats.streak}🔥</span>
+      </div>
+      
+      {status !== 'idle' && (
+        <>
+          <div className="game-info">
+            <p>Categoría: <strong>{category}</strong></p>
+            <p>Intentos restantes: <strong>{maxMistakes - mistakes}</strong></p>
+          </div>
 
-      <div className="ticks"></div>
+          <HangmanFigure mistakes={mistakes} />
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
+          <div className={`word-container ${status === 'lost' ? 'animate-shake' : ''}`}>
+            {renderWord()}
+          </div>
 
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+          <Keyboard 
+            guessedLetters={guessedLetters} 
+            word={word} 
+            onGuess={guess} 
+            status={status} 
+          />
+
+          {(status === 'won' || status === 'lost') && (
+            <div className={`result-modal animate-pop-in ${status}`}>
+              <h2>{status === 'won' ? '🎉 ¡Ganaste!' : '💀 Perdiste'}</h2>
+              {status === 'lost' && <p>La palabra era: <strong>{word}</strong></p>}
+              
+              <div className="category-selector">
+                <p>Elige la siguiente categoría:</p>
+                <div className="cat-buttons">
+                  <button onClick={() => startNewGame()}>Aleatoria</button>
+                  {Object.keys(PALABRAS).map(cat => (
+                    <button key={cat} onClick={() => startNewGame(cat)}>{cat}</button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
 }
 
-export default App
+export default App;

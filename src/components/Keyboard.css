@@ -1,0 +1,47 @@
+.keyboard {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+  max-width: 600px;
+  margin: 1.5rem auto;
+}
+
+.key-btn {
+  background: var(--kbd-bg);
+  color: var(--kbd-color);
+  border: 1px solid var(--kbd-border);
+  border-radius: 8px;
+  font-size: 1.25rem;
+  font-weight: 600;
+  padding: 0.75rem 1rem;
+  box-shadow: var(--kbd-shadow);
+  min-width: 3rem;
+  user-select: none;
+}
+
+.key-btn:hover:not(:disabled) {
+  background: var(--primary-color);
+  color: white;
+  border-color: var(--primary-color);
+  transform: translateY(-2px);
+}
+
+.key-btn:disabled {
+  opacity: 0.5;
+  transform: none;
+}
+
+.key-btn.correct {
+  background: var(--success-color);
+  color: white;
+  border-color: var(--success-color);
+  opacity: 1;
+}
+
+.key-btn.incorrect {
+  background: var(--danger-color);
+  color: white;
+  border-color: var(--danger-color);
+  opacity: 0.7;
+}
