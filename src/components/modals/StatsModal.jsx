@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, BarChart2, Trophy, Flame, Coins, Lock, CheckCircle } from 'lucide-react';
+import { X, BarChart2, Trophy, Flame, Coins, Lock, CheckCircle, ListOrdered } from 'lucide-react';
 import './Modal.css';
 
 const ACHIEVEMENTS_LIST = [
@@ -11,6 +11,8 @@ const ACHIEVEMENTS_LIST = [
 ];
 
 const StatsModal = ({ isOpen, onClose, stats }) => {
+  const [tab, setTab] = useState('stats'); // 'stats', 'achievements', 'leaderboard'
+
   const winRate = stats.wins + stats.losses > 0 
     ? Math.round((stats.wins / (stats.wins + stats.losses)) * 100) 
     : 0;
@@ -31,49 +33,84 @@ const StatsModal = ({ isOpen, onClose, stats }) => {
             exit={{ scale: 0.9, opacity: 0 }}
           >
             <button className="modal-close" onClick={onClose}><X size={24} /></button>
-            <h2><BarChart2 /> Estadísticas & Trofeos</h2>
+            <h2><BarChart2 /> Perfil del Jugador</h2>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.5rem', marginBottom: '1.5rem' }}>
-              <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                <Trophy size={32} color="var(--success-color)" style={{ margin: '0 auto 0.5rem' }} />
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.wins}</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Victorias</div>
-              </div>
-              <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                <Flame size={32} color="var(--danger-color)" style={{ margin: '0 auto 0.5rem' }} />
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.streak}</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Racha Actual</div>
-              </div>
-              <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{winRate}%</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Win Rate</div>
-              </div>
-              <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                <Coins size={32} color="var(--warning-color)" style={{ margin: '0 auto 0.5rem' }} />
-                <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.coins || 0}</div>
-                <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Monedas</div>
-              </div>
+            <div className="btn-group" style={{ marginBottom: '1.5rem', display: 'flex' }}>
+              <button className={tab === 'stats' ? 'active' : ''} onClick={() => setTab('stats')} style={{flex: 1}}>General</button>
+              <button className={tab === 'achievements' ? 'active' : ''} onClick={() => setTab('achievements')} style={{flex: 1}}>Trofeos</button>
+              <button className={tab === 'leaderboard' ? 'active' : ''} onClick={() => setTab('leaderboard')} style={{flex: 1}}>Top 5</button>
             </div>
 
-            <h3 style={{ borderBottom: '1px solid var(--surface-border)', paddingBottom: '0.5rem', marginBottom: '1rem' }}>Logros</h3>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '150px', overflowY: 'auto' }}>
-              {ACHIEVEMENTS_LIST.map(ach => {
-                const unlocked = (stats.achievements || []).includes(ach.id);
-                return (
-                  <div key={ach.id} style={{ 
-                    display: 'flex', alignItems: 'center', gap: '1rem', 
-                    padding: '0.8rem', background: 'var(--surface-color)', 
-                    borderRadius: '8px', opacity: unlocked ? 1 : 0.6 
-                  }}>
-                    {unlocked ? <CheckCircle color="#fcd34d" size={24} /> : <Lock color="var(--text-secondary)" size={24} />}
-                    <div>
-                      <strong style={{ display: 'block', color: unlocked ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{ach.name}</strong>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{ach.desc}</span>
+            {tab === 'stats' && (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                  <Trophy size={32} color="var(--success-color)" style={{ margin: '0 auto 0.5rem' }} />
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.wins}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Victorias</div>
+                </div>
+                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                  <Flame size={32} color="var(--danger-color)" style={{ margin: '0 auto 0.5rem' }} />
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.streak}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Racha Actual</div>
+                </div>
+                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{winRate}%</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Win Rate</div>
+                </div>
+                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
+                  <Coins size={32} color="var(--warning-color)" style={{ margin: '0 auto 0.5rem' }} />
+                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.coins || 0}</div>
+                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Monedas</div>
+                </div>
+              </div>
+            )}
+
+            {tab === 'achievements' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', maxHeight: '250px', overflowY: 'auto' }}>
+                {ACHIEVEMENTS_LIST.map(ach => {
+                  const unlocked = (stats.achievements || []).includes(ach.id);
+                  return (
+                    <div key={ach.id} style={{ 
+                      display: 'flex', alignItems: 'center', gap: '1rem', 
+                      padding: '0.8rem', background: 'var(--surface-color)', 
+                      borderRadius: '8px', opacity: unlocked ? 1 : 0.6 
+                    }}>
+                      {unlocked ? <CheckCircle color="#fcd34d" size={24} /> : <Lock color="var(--text-secondary)" size={24} />}
+                      <div>
+                        <strong style={{ display: 'block', color: unlocked ? 'var(--text-primary)' : 'var(--text-secondary)' }}>{ach.name}</strong>
+                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>{ach.desc}</span>
+                      </div>
                     </div>
-                  </div>
-                )
-              })}
-            </div>
+                  )
+                })}
+              </div>
+            )}
+
+            {tab === 'leaderboard' && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <ListOrdered size={20} color="var(--primary-color)" />
+                  <strong style={{ color: 'var(--primary-color)' }}>Mejores Rachas Históricas</strong>
+                </div>
+                {(!stats.topStreaks || stats.topStreaks.length === 0) ? (
+                  <p style={{ textAlign: 'center', color: 'var(--text-secondary)' }}>Aún no hay rachas registradas. ¡Juega y pierde tu primera racha para entrar al ranking!</p>
+                ) : (
+                  stats.topStreaks.map((streak, index) => (
+                    <div key={index} style={{ 
+                      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                      padding: '0.8rem 1.2rem', background: 'var(--surface-color)', 
+                      borderRadius: '8px', borderLeft: `4px solid ${index === 0 ? '#fcd34d' : index === 1 ? '#e2e8f0' : index === 2 ? '#b45309' : 'var(--surface-border)'}`
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                        <span style={{ fontWeight: 'bold', color: 'var(--text-secondary)' }}>#{index + 1}</span>
+                        <strong>Racha de {streak}</strong>
+                      </div>
+                      <Flame color="var(--danger-color)" size={20} />
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
             
           </motion.div>
         </motion.div>

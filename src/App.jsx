@@ -10,17 +10,24 @@ import ManualModal from './components/modals/ManualModal';
 import ShopModal from './components/modals/ShopModal';
 import ChallengeModal from './components/modals/ChallengeModal';
 import ToastNotification from './components/ToastNotification';
+import ParticlesBackground from './components/ParticlesBackground';
 import { PALABRAS } from './data/dictionary';
 import Confetti from 'react-confetti';
 import Tilt from 'react-parallax-tilt';
-import { Lightbulb } from 'lucide-react';
+import { Lightbulb, User } from 'lucide-react';
 import './App.css';
 
 function App() {
   const [theme, setTheme] = useState(() => localStorage.getItem('ahorcado_theme') || 'light');
   const [difficulty, setDifficulty] = useState(() => localStorage.getItem('ahorcado_difficulty') || 'normal');
-  const [soundEnabled, setSoundEnabled] = useState(() => localStorage.getItem('ahorcado_sound') !== 'false');
+  const [volume, setVolume] = useState(() => parseFloat(localStorage.getItem('ahorcado_volume') || '0.5'));
   const [useTimer, setUseTimer] = useState(() => localStorage.getItem('ahorcado_timer') === 'true');
+  const [accentColor, setAccentColor] = useState(() => localStorage.getItem('ahorcado_accent') || '#3e8ed0');
+  
+  const [profile, setProfile] = useState(() => {
+    const p = localStorage.getItem('ahorcado_profile');
+    return p ? JSON.parse(p) : { avatar: '🤖', name: 'Jugador 1' };
+  });
   
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isStatsOpen, setStatsOpen] = useState(false);
@@ -32,9 +39,8 @@ function App() {
   const [challengeWord, setChallengeWord] = useState(null);
 
   const [toasts, setToasts] = useState([]);
-  let toastIdCounter = 0;
 
-  const { playClick, playCorrect, playWrong, playWin, playLose } = useSoundEffects(soundEnabled);
+  const { playClick, playCorrect, playWrong, playWin, playLose } = useSoundEffects(volume);
 
   const {
     word,
@@ -115,14 +121,17 @@ function App() {
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    document.documentElement.style.setProperty('--primary-color', accentColor);
     localStorage.setItem('ahorcado_theme', theme);
-  }, [theme]);
+    localStorage.setItem('ahorcado_accent', accentColor);
+  }, [theme, accentColor]);
 
   useEffect(() => {
     localStorage.setItem('ahorcado_difficulty', difficulty);
-    localStorage.setItem('ahorcado_sound', soundEnabled);
+    localStorage.setItem('ahorcado_volume', volume);
     localStorage.setItem('ahorcado_timer', useTimer);
-  }, [difficulty, soundEnabled, useTimer]);
+    localStorage.setItem('ahorcado_profile', JSON.stringify(profile));
+  }, [difficulty, volume, useTimer, profile]);
 
   const handleGuess = (letter) => {
     playClick();
@@ -144,8 +153,9 @@ function App() {
 
   return (
     <>
+      <ParticlesBackground theme={theme} accentColor={accentColor} />
       <ToastNotification toasts={toasts} removeToast={removeToast} />
-      {status === 'won' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} />}
+      {status === 'won' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} colors={[accentColor, '#fcd34d', '#ffffff']} />}
       
       <Tilt 
         tiltMaxAngleX={3} 
@@ -166,7 +176,13 @@ function App() {
             onOpenChallenge={() => { playClick(); setChallengeOpen(true); }}
           />
 
-          <h1 style={{ marginBottom: '1.5rem' }}>🎯 Ahorcado Premium</h1>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', marginBottom: '1.5rem' }}>
+            <span style={{ fontSize: '2rem' }}>{profile.avatar}</span>
+            <div>
+              <h1 style={{ margin: 0, fontSize: '1.5rem' }}>{profile.name}</h1>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Nivel de Racha: {stats.streak} 🔥</span>
+            </div>
+          </div>
           
           {status !== 'idle' && (
             <>
@@ -244,10 +260,14 @@ function App() {
         setTheme={setTheme}
         difficulty={difficulty}
         setDifficulty={setDifficulty}
-        soundEnabled={soundEnabled}
-        setSoundEnabled={setSoundEnabled}
+        volume={volume}
+        setVolume={setVolume}
         useTimer={useTimer}
         setUseTimer={setUseTimer}
+        accentColor={accentColor}
+        setAccentColor={setAccentColor}
+        profile={profile}
+        setProfile={setProfile}
         onHardReset={hardReset}
       />
       <StatsModal 
