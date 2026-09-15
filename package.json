@@ -14,7 +14,8 @@
     "lucide-react": "^1.46.0",
     "react": "^19.2.8",
     "react-confetti": "^6.4.0",
-    "react-dom": "^19.2.8"
+    "react-dom": "^19.2.8",
+    "react-parallax-tilt": "^1.7.342"
   },
   "devDependencies": {
     "@types/react": "^19.2.18",

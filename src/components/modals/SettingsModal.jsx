@@ -3,7 +3,13 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings as SettingsIcon } from 'lucide-react';
 import './Modal.css';
 
-const SettingsModal = ({ isOpen, onClose, theme, setTheme, difficulty, setDifficulty }) => {
+const SettingsModal = ({ 
+  isOpen, onClose, 
+  theme, setTheme, 
+  difficulty, setDifficulty, 
+  soundEnabled, setSoundEnabled,
+  useTimer, setUseTimer
+}) => {
   return (
     <AnimatePresence>
       {isOpen && (
@@ -31,11 +37,27 @@ const SettingsModal = ({ isOpen, onClose, theme, setTheme, difficulty, setDiffic
             </div>
 
             <div className="settings-section">
-              <h3>Dificultad (Intentos Máximos)</h3>
+              <h3>Dificultad (Intentos)</h3>
               <div className="btn-group">
                 <button className={difficulty === 'easy' ? 'active' : ''} onClick={() => setDifficulty('easy')}>Fácil (8)</button>
                 <button className={difficulty === 'normal' ? 'active' : ''} onClick={() => setDifficulty('normal')}>Normal (6)</button>
                 <button className={difficulty === 'hard' ? 'active' : ''} onClick={() => setDifficulty('hard')}>Difícil (4)</button>
+              </div>
+            </div>
+
+            <div className="settings-section">
+              <h3>Experiencia</h3>
+              <div className="btn-group">
+                <button className={soundEnabled ? 'active' : ''} onClick={() => setSoundEnabled(true)}>Sonido ON</button>
+                <button className={!soundEnabled ? 'active' : ''} onClick={() => setSoundEnabled(false)}>Sonido OFF</button>
+              </div>
+            </div>
+
+            <div className="settings-section">
+              <h3>Contrarreloj</h3>
+              <div className="btn-group">
+                <button className={useTimer ? 'active' : ''} onClick={() => setUseTimer(true)}>60s ON</button>
+                <button className={!useTimer ? 'active' : ''} onClick={() => setUseTimer(false)}>OFF</button>
               </div>
             </div>
           </motion.div>

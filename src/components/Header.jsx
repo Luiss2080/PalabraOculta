@@ -6,16 +6,16 @@ const Header = ({ onOpenSettings, onOpenStats, onOpenManual }) => {
   return (
     <header className="app-header">
       <div className="header-actions">
-        <button className="icon-btn" onClick={onOpenManual} aria-label="Manual">
+        <button className="icon-btn" onClick={onOpenManual} title="Manual de Uso" aria-label="Manual">
           <BookOpen size={24} />
         </button>
       </div>
       
       <div className="header-actions">
-        <button className="icon-btn" onClick={onOpenStats} aria-label="Estadísticas">
+        <button className="icon-btn" onClick={onOpenStats} title="Estadísticas" aria-label="Estadísticas">
           <BarChart2 size={24} />
         </button>
-        <button className="icon-btn" onClick={onOpenSettings} aria-label="Ajustes">
+        <button className="icon-btn" onClick={onOpenSettings} title="Ajustes" aria-label="Ajustes">
           <Settings size={24} />
         </button>
       </div>
