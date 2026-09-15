@@ -7,6 +7,8 @@ import Header from './components/Header';
 import SettingsModal from './components/modals/SettingsModal';
 import StatsModal from './components/modals/StatsModal';
 import ManualModal from './components/modals/ManualModal';
+import ShopModal from './components/modals/ShopModal';
+import ChallengeModal from './components/modals/ChallengeModal';
 import { PALABRAS } from './data/dictionary';
 import Confetti from 'react-confetti';
 import Tilt from 'react-parallax-tilt';
@@ -21,7 +23,11 @@ function App() {
   const [isSettingsOpen, setSettingsOpen] = useState(false);
   const [isStatsOpen, setStatsOpen] = useState(false);
   const [isManualOpen, setManualOpen] = useState(false);
+  const [isShopOpen, setShopOpen] = useState(false);
+  const [isChallengeOpen, setChallengeOpen] = useState(false);
+  
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
+  const [challengeWord, setChallengeWord] = useState(null);
 
   const { playClick, playCorrect, playWrong, playWin, playLose } = useSoundEffects(soundEnabled);
 
@@ -36,8 +42,33 @@ function App() {
     lastAction,
     startNewGame,
     guess,
-    maxMistakes
+    maxMistakes,
+    updateUnlocks,
+    hardReset
   } = useGameEngine(difficulty, useTimer);
+
+  // Check URL for challenges
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reto = params.get('reto');
+    if (reto) {
+      try {
+        const decoded = atob(reto);
+        if (decoded && decoded.length > 0) {
+          setChallengeWord(decoded);
+        }
+      } catch (e) {
+        console.error("Reto inválido");
+      }
+    }
+  }, []);
+
+  // Initialize game on first load
+  useEffect(() => {
+    if (status === 'idle') {
+      startNewGame(null, challengeWord);
+    }
+  }, [status, startNewGame, challengeWord]);
 
   // Sound effects listener
   useEffect(() => {
@@ -67,16 +98,14 @@ function App() {
     localStorage.setItem('ahorcado_timer', useTimer);
   }, [difficulty, soundEnabled, useTimer]);
 
-  // Initialize game on first load
-  useEffect(() => {
-    if (status === 'idle') {
-      startNewGame();
-    }
-  }, [status, startNewGame]);
-
   const handleGuess = (letter) => {
     playClick();
     guess(letter);
+  };
+  
+  const handlePurchase = (item) => {
+    playWin();
+    updateUnlocks([...stats.unlocks, item.id], item.price);
   };
 
   const renderWord = () => {
@@ -106,6 +135,8 @@ function App() {
             onOpenSettings={() => { playClick(); setSettingsOpen(true); }}
             onOpenStats={() => { playClick(); setStatsOpen(true); }}
             onOpenManual={() => { playClick(); setManualOpen(true); }}
+            onOpenShop={() => { playClick(); setShopOpen(true); }}
+            onOpenChallenge={() => { playClick(); setChallengeOpen(true); }}
           />
 
           <h1 style={{ marginBottom: '1.5rem' }}>🎯 Ahorcado Premium</h1>
@@ -141,12 +172,14 @@ function App() {
                   {status === 'lost' && <p>La palabra era: <strong>{word}</strong></p>}
                   
                   <div className="category-selector">
-                    <p>Elige la siguiente categoría:</p>
+                    <p>{challengeWord ? 'Vuelve a jugar o elige una categoría:' : 'Elige la siguiente categoría:'}</p>
                     <div className="cat-buttons">
-                      <button onClick={() => { playClick(); startNewGame(); }}>Aleatoria</button>
+                      <button onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame(); }}>Aleatoria</button>
                       {Object.keys(PALABRAS).map(cat => (
-                        <button key={cat} onClick={() => { playClick(); startNewGame(cat); }}>{cat}</button>
+                        <button key={cat} onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame(cat); }}>{cat}</button>
                       ))}
+                      {stats.unlocks.includes('cat_movies') && <button onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame('Películas'); }}>Películas 🎬</button>}
+                      {stats.unlocks.includes('cat_games') && <button onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame('Videojuegos'); }}>Videojuegos 🎮</button>}
                     </div>
                   </div>
                 </div>
@@ -167,6 +200,7 @@ function App() {
         setSoundEnabled={setSoundEnabled}
         useTimer={useTimer}
         setUseTimer={setUseTimer}
+        onHardReset={hardReset}
       />
       <StatsModal 
         isOpen={isStatsOpen} 
@@ -176,6 +210,17 @@ function App() {
       <ManualModal 
         isOpen={isManualOpen} 
         onClose={() => { playClick(); setManualOpen(false); }} 
+      />
+      <ShopModal
+        isOpen={isShopOpen}
+        onClose={() => { playClick(); setShopOpen(false); }}
+        coins={stats.coins || 0}
+        unlocks={stats.unlocks || []}
+        onPurchase={handlePurchase}
+      />
+      <ChallengeModal
+        isOpen={isChallengeOpen}
+        onClose={() => { playClick(); setChallengeOpen(false); }}
       />
     </>
   );
