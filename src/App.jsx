@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import HangmanFigure from './components/HangmanFigure';
@@ -9,9 +9,11 @@ import StatsModal from './components/modals/StatsModal';
 import ManualModal from './components/modals/ManualModal';
 import ShopModal from './components/modals/ShopModal';
 import ChallengeModal from './components/modals/ChallengeModal';
+import ToastNotification from './components/ToastNotification';
 import { PALABRAS } from './data/dictionary';
 import Confetti from 'react-confetti';
 import Tilt from 'react-parallax-tilt';
+import { Lightbulb } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -29,6 +31,9 @@ function App() {
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
   const [challengeWord, setChallengeWord] = useState(null);
 
+  const [toasts, setToasts] = useState([]);
+  let toastIdCounter = 0;
+
   const { playClick, playCorrect, playWrong, playWin, playLose } = useSoundEffects(soundEnabled);
 
   const {
@@ -40,12 +45,36 @@ function App() {
     stats,
     timeLeft,
     lastAction,
+    newAchieved,
+    setNewAchieved,
     startNewGame,
     guess,
+    useHint,
     maxMistakes,
     updateUnlocks,
     hardReset
   } = useGameEngine(difficulty, useTimer);
+
+  const addToast = useCallback((message) => {
+    const id = Date.now() + Math.random();
+    setToasts(prev => [...prev, { id, message }]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  }, []);
+
+  const removeToast = useCallback((id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  }, []);
+
+  // Handle new achievements
+  useEffect(() => {
+    if (newAchieved.length > 0) {
+      newAchieved.forEach(achName => addToast(achName));
+      setNewAchieved([]);
+      playWin();
+    }
+  }, [newAchieved, addToast, playWin, setNewAchieved]);
 
   // Check URL for challenges
   useEffect(() => {
@@ -78,20 +107,17 @@ function App() {
     else if (lastAction === 'lose') playLose();
   }, [lastAction, playCorrect, playWrong, playWin, playLose]);
 
-  // Resize listener for Confetti
   useEffect(() => {
     const handleResize = () => setWindowSize({ width: window.innerWidth, height: window.innerHeight });
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  // Theme effect
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
     localStorage.setItem('ahorcado_theme', theme);
   }, [theme]);
 
-  // Settings effect
   useEffect(() => {
     localStorage.setItem('ahorcado_difficulty', difficulty);
     localStorage.setItem('ahorcado_sound', soundEnabled);
@@ -118,6 +144,7 @@ function App() {
 
   return (
     <>
+      <ToastNotification toasts={toasts} removeToast={removeToast} />
       {status === 'won' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} />}
       
       <Tilt 
@@ -158,6 +185,26 @@ function App() {
               <div className={`word-container ${status === 'lost' ? 'animate-shake' : ''}`}>
                 {renderWord()}
               </div>
+              
+              {status === 'playing' && (
+                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
+                  <button 
+                    onClick={() => { playClick(); useHint(); }}
+                    disabled={stats.coins < 50}
+                    style={{
+                      background: stats.coins >= 50 ? 'var(--warning-color)' : 'var(--surface-border)',
+                      color: stats.coins >= 50 ? '#333' : 'var(--text-secondary)',
+                      border: 'none', padding: '0.5rem 1rem', borderRadius: '8px',
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      cursor: stats.coins >= 50 ? 'pointer' : 'not-allowed',
+                      fontWeight: 'bold', fontSize: '0.85rem'
+                    }}
+                    title="Revelar una letra por 50 monedas"
+                  >
+                    <Lightbulb size={18} /> Pista (-50 💰)
+                  </button>
+                </div>
+              )}
 
               <Keyboard 
                 guessedLetters={guessedLetters} 
@@ -173,7 +220,8 @@ function App() {
                   
                   <div className="category-selector">
                     <p>{challengeWord ? 'Vuelve a jugar o elige una categoría:' : 'Elige la siguiente categoría:'}</p>
-                    <div className="cat-buttons">
+                    <div className="cat-buttons" style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', justifyContent: 'center' }}>
+                      <button onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame(null, null, true); }} style={{ background: 'var(--warning-color)', color: '#333' }}>🌟 Reto Diario</button>
                       <button onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame(); }}>Aleatoria</button>
                       {Object.keys(PALABRAS).map(cat => (
                         <button key={cat} onClick={() => { playClick(); window.history.replaceState({}, '', '/'); setChallengeWord(null); startNewGame(cat); }}>{cat}</button>

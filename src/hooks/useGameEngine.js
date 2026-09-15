@@ -1,14 +1,25 @@
 import { useState, useEffect, useCallback } from 'react';
-import { getRandomWord } from '../data/dictionary';
+import { getRandomWord, PALABRAS } from '../data/dictionary';
+
+function getDailySeed() {
+  const date = new Date();
+  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+}
+
+function seededRandom(seed) {
+  var x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
 
 export function useGameEngine(difficulty = 'normal', useTimer = false) {
   const [word, setWord] = useState('');
   const [category, setCategory] = useState('');
   const [guessedLetters, setGuessedLetters] = useState(new Set());
   const [mistakes, setMistakes] = useState(0);
-  const [status, setStatus] = useState('idle'); // 'idle', 'playing', 'won', 'lost'
+  const [status, setStatus] = useState('idle'); 
   const [timeLeft, setTimeLeft] = useState(60);
-  const [lastAction, setLastAction] = useState(null); // 'correct', 'wrong', 'win', 'lose'
+  const [lastAction, setLastAction] = useState(null); 
+  const [newAchieved, setNewAchieved] = useState([]); 
   
   const maxMistakes = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 4 : 6;
   const coinsReward = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20;
@@ -21,14 +32,46 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       losses: parsed.losses || 0, 
       streak: parsed.streak || 0, 
       coins: parsed.coins || 0, 
-      unlocks: parsed.unlocks || [] 
+      unlocks: parsed.unlocks || [],
+      achievements: parsed.achievements || []
     };
   });
 
-  const startNewGame = useCallback((selectedCategory = null, customWord = null) => {
+  const checkAchievements = useCallback((currentStats, currentMistakes, isWon) => {
+    const unlocks = [];
+    const hasAch = (id) => currentStats.achievements.includes(id);
+
+    if (isWon) {
+      if (!hasAch('first_blood')) unlocks.push({ id: 'first_blood', name: 'Primera Sangre' });
+      if (currentMistakes === 0 && !hasAch('flawless')) unlocks.push({ id: 'flawless', name: 'Impecable' });
+      if (currentMistakes === maxMistakes - 1 && !hasAch('survivor')) unlocks.push({ id: 'survivor', name: 'Sobreviviente' });
+    }
+    
+    if (currentStats.coins >= 500 && !hasAch('millionaire')) unlocks.push({ id: 'millionaire', name: 'Millonario' });
+
+    if (unlocks.length > 0) {
+      setNewAchieved(unlocks.map(u => u.name));
+      setStats(s => ({
+        ...s,
+        achievements: [...s.achievements, ...unlocks.map(u => u.id)]
+      }));
+    }
+  }, [maxMistakes]);
+
+  const startNewGame = useCallback((selectedCategory = null, customWord = null, isDaily = false) => {
     if (customWord) {
       setWord(customWord.toUpperCase());
       setCategory('Reto de un amigo');
+    } else if (isDaily) {
+      const seed = getDailySeed();
+      const catKeys = Object.keys(PALABRAS);
+      const catIndex = Math.floor(seededRandom(seed) * catKeys.length);
+      const randomCat = catKeys[catIndex];
+      const words = PALABRAS[randomCat];
+      const wordIndex = Math.floor(seededRandom(seed + 1) * words.length);
+      
+      setWord(words[wordIndex].toUpperCase());
+      setCategory(`Reto Diario`);
     } else {
       const { category, word } = getRandomWord(selectedCategory);
       setWord(word);
@@ -47,17 +90,40 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   }, [stats]);
 
   const updateUnlocks = useCallback((newUnlocks, cost) => {
-    setStats(s => ({ ...s, unlocks: newUnlocks, coins: s.coins - cost }));
-  }, []);
+    setStats(s => {
+      const newState = { ...s, unlocks: newUnlocks, coins: s.coins - cost };
+      checkAchievements(newState, 0, false);
+      return newState;
+    });
+  }, [checkAchievements]);
   
+  const useHint = useCallback(() => {
+    if (status !== 'playing' || stats.coins < 50) return false;
+    
+    const unrevealed = word.split('').filter(l => !guessedLetters.has(l));
+    if (unrevealed.length === 0) return false;
+    
+    const randomLetter = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    
+    setStats(s => ({ ...s, coins: s.coins - 50 }));
+    
+    setGuessedLetters(prev => {
+      const newSet = new Set(prev);
+      newSet.add(randomLetter);
+      return newSet;
+    });
+    setLastAction('correct');
+    
+    return true;
+  }, [word, guessedLetters, status, stats.coins]);
+
   const hardReset = useCallback(() => {
-    const resetData = { wins: 0, losses: 0, streak: 0, coins: 0, unlocks: [] };
+    const resetData = { wins: 0, losses: 0, streak: 0, coins: 0, unlocks: [], achievements: [] };
     setStats(resetData);
     localStorage.setItem('ahorcado_stats', JSON.stringify(resetData));
     setStatus('idle');
   }, []);
 
-  // Timer logic
   useEffect(() => {
     if (status !== 'playing' || !useTimer) return;
     
@@ -102,7 +168,6 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     }
   }, [word, status, guessedLetters, mistakes, maxMistakes]);
 
-  // Handle keyboard events globally
   useEffect(() => {
     const handleKeyDown = (e) => {
       const key = e.key.toUpperCase();
@@ -120,9 +185,17 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     if (isWon) {
       setStatus('won');
       setLastAction('win');
-      setStats(s => ({ ...s, wins: s.wins + 1, streak: s.streak + 1, coins: (s.coins || 0) + coinsReward }));
+      
+      const multiplier = category.includes('Reto Diario') ? 2 : 1;
+      const earnedCoins = coinsReward * multiplier;
+
+      setStats(s => {
+        const newState = { ...s, wins: s.wins + 1, streak: s.streak + 1, coins: (s.coins || 0) + earnedCoins };
+        checkAchievements(newState, mistakes, true);
+        return newState;
+      });
     }
-  }, [guessedLetters, word, status, coinsReward]);
+  }, [guessedLetters, word, status, coinsReward, category, mistakes, checkAchievements]);
 
   return {
     word,
@@ -133,8 +206,11 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     stats,
     timeLeft,
     lastAction,
+    newAchieved,
+    setNewAchieved,
     startNewGame,
     guess,
+    useHint,
     maxMistakes,
     updateUnlocks,
     hardReset
