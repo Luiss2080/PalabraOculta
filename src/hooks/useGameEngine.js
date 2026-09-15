@@ -11,16 +11,30 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   const [lastAction, setLastAction] = useState(null); // 'correct', 'wrong', 'win', 'lose'
   
   const maxMistakes = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 4 : 6;
+  const coinsReward = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20;
   
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('ahorcado_stats');
-    return saved ? JSON.parse(saved) : { wins: 0, losses: 0, streak: 0 };
+    const parsed = saved ? JSON.parse(saved) : {};
+    return { 
+      wins: parsed.wins || 0, 
+      losses: parsed.losses || 0, 
+      streak: parsed.streak || 0, 
+      coins: parsed.coins || 0, 
+      unlocks: parsed.unlocks || [] 
+    };
   });
 
-  const startNewGame = useCallback((selectedCategory = null) => {
-    const { category, word } = getRandomWord(selectedCategory);
-    setWord(word);
-    setCategory(category);
+  const startNewGame = useCallback((selectedCategory = null, customWord = null) => {
+    if (customWord) {
+      setWord(customWord.toUpperCase());
+      setCategory('Reto de un amigo');
+    } else {
+      const { category, word } = getRandomWord(selectedCategory);
+      setWord(word);
+      setCategory(category);
+    }
+    
     setGuessedLetters(new Set());
     setMistakes(0);
     setTimeLeft(60);
@@ -31,6 +45,17 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   useEffect(() => {
     localStorage.setItem('ahorcado_stats', JSON.stringify(stats));
   }, [stats]);
+
+  const updateUnlocks = useCallback((newUnlocks, cost) => {
+    setStats(s => ({ ...s, unlocks: newUnlocks, coins: s.coins - cost }));
+  }, []);
+  
+  const hardReset = useCallback(() => {
+    const resetData = { wins: 0, losses: 0, streak: 0, coins: 0, unlocks: [] };
+    setStats(resetData);
+    localStorage.setItem('ahorcado_stats', JSON.stringify(resetData));
+    setStatus('idle');
+  }, []);
 
   // Timer logic
   useEffect(() => {
@@ -95,9 +120,9 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     if (isWon) {
       setStatus('won');
       setLastAction('win');
-      setStats(s => ({ ...s, wins: s.wins + 1, streak: s.streak + 1 }));
+      setStats(s => ({ ...s, wins: s.wins + 1, streak: s.streak + 1, coins: (s.coins || 0) + coinsReward }));
     }
-  }, [guessedLetters, word, status]);
+  }, [guessedLetters, word, status, coinsReward]);
 
   return {
     word,
@@ -110,6 +135,8 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     lastAction,
     startNewGame,
     guess,
-    maxMistakes
+    maxMistakes,
+    updateUnlocks,
+    hardReset
   };
 }

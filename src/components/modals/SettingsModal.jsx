@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Settings as SettingsIcon } from 'lucide-react';
+import { X, Settings as SettingsIcon, AlertTriangle } from 'lucide-react';
 import './Modal.css';
 
 const SettingsModal = ({ 
@@ -8,8 +8,21 @@ const SettingsModal = ({
   theme, setTheme, 
   difficulty, setDifficulty, 
   soundEnabled, setSoundEnabled,
-  useTimer, setUseTimer
+  useTimer, setUseTimer,
+  onHardReset
 }) => {
+  const [confirmReset, setConfirmReset] = useState(false);
+
+  const handleReset = () => {
+    if (confirmReset) {
+      onHardReset();
+      setConfirmReset(false);
+      onClose();
+    } else {
+      setConfirmReset(true);
+    }
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -60,6 +73,22 @@ const SettingsModal = ({
                 <button className={!useTimer ? 'active' : ''} onClick={() => setUseTimer(false)}>OFF</button>
               </div>
             </div>
+
+            <div className="settings-section" style={{ borderTop: '1px solid var(--surface-border)', paddingTop: '1rem', marginTop: '1rem' }}>
+              <button 
+                onClick={handleReset}
+                style={{
+                  width: '100%', padding: '0.75rem', background: 'var(--danger-color)', 
+                  color: 'white', border: 'none', borderRadius: '8px', fontWeight: 'bold',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem',
+                  cursor: 'pointer'
+                }}
+              >
+                <AlertTriangle size={20} />
+                {confirmReset ? '¿Estás seguro? Clic para confirmar' : 'Borrar todo el progreso'}
+              </button>
+            </div>
+
           </motion.div>
         </motion.div>
       )}
