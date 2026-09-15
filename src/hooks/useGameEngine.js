@@ -33,7 +33,8 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       streak: parsed.streak || 0, 
       coins: parsed.coins || 0, 
       unlocks: parsed.unlocks || [],
-      achievements: parsed.achievements || []
+      achievements: parsed.achievements || [],
+      topStreaks: parsed.topStreaks || []
     };
   });
 
@@ -117,8 +118,19 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     return true;
   }, [word, guessedLetters, status, stats.coins]);
 
+  const handleLoss = useCallback((s) => {
+    const newStreak = s.streak;
+    let newTop = [...s.topStreaks];
+    if (newStreak > 0) {
+      newTop.push(newStreak);
+      newTop.sort((a, b) => b - a);
+      newTop = newTop.slice(0, 5);
+    }
+    return { ...s, losses: s.losses + 1, streak: 0, topStreaks: newTop };
+  }, []);
+
   const hardReset = useCallback(() => {
-    const resetData = { wins: 0, losses: 0, streak: 0, coins: 0, unlocks: [], achievements: [] };
+    const resetData = { wins: 0, losses: 0, streak: 0, coins: 0, unlocks: [], achievements: [], topStreaks: [] };
     setStats(resetData);
     localStorage.setItem('ahorcado_stats', JSON.stringify(resetData));
     setStatus('idle');
@@ -132,7 +144,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
         if (prev <= 1) {
           setStatus('lost');
           setLastAction('lose');
-          setStats(s => ({ ...s, losses: s.losses + 1, streak: 0 }));
+          setStats(handleLoss);
           return 0;
         }
         return prev - 1;
@@ -140,7 +152,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [status, useTimer]);
+  }, [status, useTimer, handleLoss]);
 
   const guess = useCallback((letter) => {
     if (status !== 'playing') return;
@@ -161,12 +173,12 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       if (newMistakes >= maxMistakes) {
         setStatus('lost');
         setLastAction('lose');
-        setStats(s => ({ ...s, losses: s.losses + 1, streak: 0 }));
+        setStats(handleLoss);
       }
     } else {
       setLastAction('correct');
     }
-  }, [word, status, guessedLetters, mistakes, maxMistakes]);
+  }, [word, status, guessedLetters, mistakes, maxMistakes, handleLoss]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
