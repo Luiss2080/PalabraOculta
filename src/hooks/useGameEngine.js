@@ -1,14 +1,15 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getRandomWord } from '../data/dictionary';
 
-const MAX_MISTAKES = 6;
-
-export function useGameEngine() {
+export function useGameEngine(difficulty = 'normal') {
   const [word, setWord] = useState('');
   const [category, setCategory] = useState('');
   const [guessedLetters, setGuessedLetters] = useState(new Set());
   const [mistakes, setMistakes] = useState(0);
   const [status, setStatus] = useState('idle'); // 'idle', 'playing', 'won', 'lost'
+  
+  // Calculate max mistakes based on difficulty
+  const maxMistakes = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 4 : 6;
   
   // Stats state
   const [stats, setStats] = useState(() => {
@@ -44,12 +45,12 @@ export function useGameEngine() {
     if (!word.includes(upperLetter)) {
       const newMistakes = mistakes + 1;
       setMistakes(newMistakes);
-      if (newMistakes >= MAX_MISTAKES) {
+      if (newMistakes >= maxMistakes) {
         setStatus('lost');
         setStats(s => ({ ...s, losses: s.losses + 1, streak: 0 }));
       }
     }
-  }, [word, status, guessedLetters, mistakes]);
+  }, [word, status, guessedLetters, mistakes, maxMistakes]);
 
   // Handle keyboard events globally
   useEffect(() => {
@@ -81,6 +82,6 @@ export function useGameEngine() {
     stats,
     startNewGame,
     guess,
-    maxMistakes: MAX_MISTAKES
+    maxMistakes
   };
 }
