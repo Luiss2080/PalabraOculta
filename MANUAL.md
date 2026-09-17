@@ -1,7 +1,7 @@
-# 🎯 Manual de Usuario: Ahorcado Premium
+# 🎯 Manual de Usuario: PalabraOculta
 
 ## ¿Qué es?
-Ahorcado Premium es una versión moderna del clásico juego de adivinar palabras, construido con React, Vite y Framer Motion para asegurar una experiencia interactiva fluida.
+PalabraOculta es una versión moderna del clásico juego de adivinar palabras, construido con React, Vite y Framer Motion para asegurar una experiencia interactiva fluida.
 
 ## ¿Cómo Jugar?
 1. Al iniciar la aplicación, se elegirá una palabra aleatoria de una categoría predefinida (ej. Animales, Frutas, Países).

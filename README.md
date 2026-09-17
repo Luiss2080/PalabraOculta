@@ -1,7 +1,6 @@
 <div align="center">
   <img src="public/favicon.svg" alt="Logo" width="120" />
-  <h1>🎯 Ahorcado Web Premium</h1>
-  <p><strong>El clásico juego del Ahorcado, rediseñado para el futuro de la web.</strong></p>
+  <h1>🎯 PalabraOculta</h1>
 
   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)
   [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](#)
@@ -11,77 +10,142 @@
 
 <br />
 
-> **Ahorcado Web Premium** no es solo un juego, es una experiencia interactiva completa. Desarrollado con los más altos estándares de diseño (Glassmorphism), animaciones fluidas, y un motor robusto impulsado por React y Vite.
+> El clásico juego del ahorcado, reconstruido como una experiencia web moderna:
+> gamificación con monedas y logros, reto diario, desafíos asíncronos por
+> enlace, y una interfaz con glassmorphism, partículas y parallax 3D.
 
 ---
 
-## ✨ Características Principales
+## ✨ Características
 
-### 🎮 Gamificación y Economía
-- **Tienda y Monedas (💰):** Gana monedas por cada victoria. Gástalas en la Tienda para desbloquear nuevas categorías secretas (*Películas*, *Videojuegos*).
-- **Sistema de Logros (🏆):** Un motor de trofeos en tiempo real que recompensa tu estilo de juego. Gana de forma impecable o conviértete en millonario para desbloquear medallas.
-- **Power-Ups (💡):** ¿A punto de perder? Gasta tus monedas usando "Pistas" para que el juego revele letras correctas en el tablero.
+### 🎮 Gamificación y economía
+- **Monedas y Tienda (💰):** cada victoria otorga monedas según la dificultad
+  elegida; gástalas para desbloquear categorías adicionales.
+- **Pistas:** con suficientes monedas, revela una letra correcta al vuelo
+  durante una partida en curso.
+- **Logros:** se desbloquean automáticamente al ganar sin fallos, sobrevivir
+  con un solo intento restante, ganar tu primera partida, o acumular una
+  fortuna en monedas.
+- **Rachas y ranking histórico:** la racha de victorias consecutivas se
+  registra, y tus mejores 5 rachas quedan guardadas para consultarlas luego.
 
-### 🌐 Interacción Social
-- **Multijugador Asíncrono (Desafíos):** Escribe tu propia palabra secreta. La aplicación generará un "Enlace Mágico" encriptado (Base64). ¡Envíalo a tus amigos para retarlos!
-- **Reto Diario (📅):** Un modo especial donde todos los jugadores del mundo compiten adivinando la *misma palabra exacta*, sincronizada por semilla diaria. ¡Otorga el doble de recompensas!
+### 🌐 Interacción social
+- **Reto a un amigo:** escribe una palabra secreta y genera un enlace (la
+  palabra viaja codificada en Base64 en la URL) para que cualquier amigo la
+  intente adivinar.
+- **Reto Diario:** una palabra elegida con una semilla determinística por
+  fecha, para que abrir la app varias veces el mismo día te presente
+  siempre el mismo desafío — y paga el doble de monedas al ganarlo.
 
-### 🎨 The Ultimate UI (Diseño Gráfico)
-- **Físicas y Parallax 3D:** El contenedor principal reacciona dinámicamente a los movimientos de tu ratón usando `react-parallax-tilt`.
-- **Fondo de Partículas Dinámico:** Un lienzo estelar impulsado por `tsparticles` que interactúa con tu cursor.
-- **Personalización Extrema:** Elige tu Avatar, Nombre, Tema (Claro/Oscuro) y **Color de Acento** (Neón, Púrpura, Azul, Naranja) usando variables CSS dinámicas.
+### 🎨 Interfaz
+- **Parallax 3D** en el panel principal (`react-parallax-tilt`) y **fondo de
+  partículas** interactivo (`@tsparticles/react`).
+- **Tema claro/oscuro** y **color de acento** personalizables, con
+  variables CSS para theming consistente.
+- **Perfil de jugador:** avatar y nombre editables, guardados localmente.
+- Animaciones de transición y modales con `framer-motion`, y confeti al
+  ganar con `react-confetti`.
 
-### 🔊 Inmersión Sensorial
-- **Audio Generativo Nativo:** Adiós a los MP3 pesados. Los sonidos de tecleo, victorias y derrotas se generan en tiempo real utilizando sintetizadores nativos (*Web Audio API*).
-- **Mixer de Audio:** Controla el volumen exacto de los efectos con un deslizador analógico integrado.
+### 🔊 Sonido
+- Efectos de sonido generados en tiempo real con la Web Audio API (sin
+  archivos de audio que descargar), con control de volumen.
 
----
-
-## 🚀 Instalación y Uso Local
-
-Para levantar este proyecto en tu máquina y disfrutarlo en desarrollo:
-
-1. **Clonar el repositorio:**
-   ```bash
-   git clone https://github.com/tu-usuario/ahorcado-web.git
-   cd ahorcado-web
-   ```
-
-2. **Instalar Dependencias:**
-   ```bash
-   npm install
-   ```
-
-3. **Ejecutar en Entorno de Desarrollo:**
-   ```bash
-   npm run dev
-   ```
-   *El servidor iniciará típicamente en `http://localhost:5173`*
-
-4. **Compilar para Producción:**
-   ```bash
-   npm run build
-   ```
+### ♿ Accesibilidad
+- Se puede jugar por completo con el teclado físico (además del teclado en
+  pantalla), con anuncios de estado para lectores de pantalla y navegación
+  por foco en los modales.
 
 ---
 
-## 🧪 Testing
+## 🕹️ Cómo jugar
 
-Este proyecto está construido para ser robusto (Production-Ready). Utilizamos **Vitest** y **React Testing Library** para asegurar que el motor lógico jamás falle.
+1. Al abrir la app se elige una palabra al azar de una categoría (o la que
+   hayas seleccionado) y se dibuja el tablero.
+2. Adivina letras usando el teclado en pantalla o tu teclado físico
+   (A-Z, incluida la Ñ) antes de que se complete el dibujo del ahorcado.
+3. Cada letra correcta revela todas sus apariciones en la palabra; cada
+   letra incorrecta resta un intento. La cantidad de intentos disponibles
+   depende de la dificultad (Fácil: 8, Normal: 6, Difícil: 4).
+4. Gana monedas al acertar, gástalas en pistas o en la tienda, y compite
+   contra tu propia racha o contra el Reto Diario.
 
-Para ejecutar la suite de pruebas unitarias:
+---
+
+## 🚀 Instalación y uso local
+
 ```bash
-npm run test
+git clone https://github.com/Luiss2080/ahorcado-web.git
+cd ahorcado-web
+npm install
+npm run dev
+```
+
+El servidor de desarrollo (Vite) queda disponible típicamente en
+`http://localhost:5173`.
+
+Otros comandos disponibles:
+
+```bash
+npm run build     # build de producción
+npm run preview   # sirve el build de producción localmente
+npm run lint      # linting con oxlint
 ```
 
 ---
 
-## 📁 Arquitectura (SDD)
+## 🧪 Tests
 
-El código sigue un paradigma de **Separación de Responsabilidades** (SoC):
-- `src/hooks/useGameEngine.js`: El corazón lógico. Maneja el estado global, la economía, el temporizador y los logros.
-- `src/hooks/useSoundEffects.js`: Controlador aislado de la API Web de Audio.
-- `src/components/`: Componentes modulares y reutilizables de UI. Los modales se basan en `framer-motion` para animaciones ricas.
+El motor de juego y la lógica auxiliar tienen pruebas unitarias con
+[Vitest](https://vitest.dev/) (y React Testing Library para componentes).
+Para ejecutarlas:
+
+```bash
+npm test
+```
+
+---
+
+## 🛠️ Tecnologías
+
+- **[React 19](https://react.dev/)** + **[Vite](https://vitejs.dev/)** como
+  base de la aplicación.
+- **[framer-motion](https://www.framer.com/motion/)** para las animaciones
+  y transiciones de los modales.
+- **[@tsparticles/react](https://particles.js.org/)** para el fondo de
+  partículas interactivo.
+- **[react-parallax-tilt](https://www.npmjs.com/package/react-parallax-tilt)**
+  para el efecto de parallax 3D del panel principal.
+- **[react-confetti](https://www.npmjs.com/package/react-confetti)** para la
+  celebración al ganar.
+- **[lucide-react](https://lucide.dev/)** para los íconos.
+- **Web Audio API** nativa para los efectos de sonido (sin librerías ni
+  archivos de audio).
+- **[Vitest](https://vitest.dev/)** + **React Testing Library** para las
+  pruebas.
+- **[oxlint](https://oxc.rs/docs/guide/usage/linter.html)** para linting.
+- CSS puro con variables (theming claro/oscuro) — sin framework de estilos.
+
+---
+
+## 📁 Arquitectura
+
+- `src/hooks/useGameEngine.js`: el motor lógico del juego — estado de la
+  partida, economía (monedas/tienda/logros), temporizador y reto diario.
+- `src/hooks/useSoundEffects.js`: efectos de sonido aislados vía Web Audio
+  API.
+- `src/data/dictionary.js`: categorías y palabras, y la selección aleatoria.
+- `src/components/`: componentes de UI (teclado, figura del ahorcado,
+  modales, notificaciones).
+- `legacy/`: la versión original en HTML/CSS/JS puro (sin dependencias),
+  conservada como referencia histórica del proyecto — no forma parte de la
+  build de Vite ni se mantiene activamente.
+
+---
+
+## 📄 Licencia
+
+Este proyecto está bajo la licencia MIT — ver [`LICENSE`](LICENSE) para el
+texto completo.
 
 ---
 
