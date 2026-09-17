@@ -84,3 +84,95 @@
   border-color: var(--primary-color);
 }
 
+.stats-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.stat-card {
+  background: var(--surface-color);
+  padding: 1rem;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.stat-card-icon {
+  margin: 0 auto 0.5rem;
+}
+
+.stat-card-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.stat-card-label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.shop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.shop-coin-balance {
+  background: var(--warning-color);
+  color: #333;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: bold;
+}
+
+.shop-items {
+  margin-top: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  background: var(--surface-color);
+  border-radius: 12px;
+  border: 1px solid var(--surface-border);
+}
+
+.shop-item-title {
+  display: block;
+}
+
+.shop-item-type {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.shop-item-unlocked {
+  color: var(--success-color);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.shop-buy-button {
+  background: var(--surface-border);
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: not-allowed;
+}
+
+.shop-buy-button.affordable {
+  background: var(--primary-color);
+  color: white;
+  cursor: pointer;
+}
+

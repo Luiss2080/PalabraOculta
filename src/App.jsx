@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback, useMemo } from 'react';
-import { useGameEngine } from './hooks/useGameEngine';
+import { useGameEngine, HINT_COST } from './hooks/useGameEngine';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import HangmanFigure from './components/HangmanFigure';
 import Keyboard from './components/Keyboard';
@@ -14,7 +14,7 @@ import ParticlesBackground from './components/ParticlesBackground';
 import { PALABRAS } from './data/dictionary';
 import Confetti from 'react-confetti';
 import Tilt from 'react-parallax-tilt';
-import { Lightbulb, User } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -36,7 +36,23 @@ function App() {
   const [isChallengeOpen, setChallengeOpen] = useState(false);
   
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const [challengeWord, setChallengeWord] = useState(null);
+  // Derived once, synchronously, from the URL's `reto` param (if any) using
+  // a lazy initializer instead of an effect: the value is already knowable
+  // during the very first render, so there's no need to render once without
+  // it and then trigger a second render just to set it (oxlint's
+  // react/set-state-in-effect flags that pattern).
+  const [challengeWord, setChallengeWord] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reto = params.get('reto');
+    if (!reto) return null;
+    try {
+      const decoded = atob(reto);
+      return decoded && decoded.length > 0 ? decoded : null;
+    } catch {
+      console.error('Reto inválido');
+      return null;
+    }
+  });
 
   const [toasts, setToasts] = useState([]);
 
@@ -203,11 +219,11 @@ function App() {
             onOpenChallenge={() => { playClick(); setChallengeOpen(true); }}
           />
 
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.8rem', marginBottom: '1.5rem' }}>
-            <span style={{ fontSize: '2rem' }}>{profile.avatar}</span>
+          <div className="profile-header">
+            <span className="profile-avatar">{profile.avatar}</span>
             <div>
-              <h1 style={{ margin: 0, fontSize: '1.5rem' }}>{profile.name}</h1>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Nivel de Racha: {stats.streak} 🔥</span>
+              <h1>{profile.name}</h1>
+              <span className="profile-streak">Nivel de Racha: {stats.streak} 🔥</span>
             </div>
           </div>
           
@@ -230,21 +246,14 @@ function App() {
               </div>
               
               {status === 'playing' && (
-                <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
-                  <button 
+                <div className="hint-button-row">
+                  <button
+                    className={`hint-button ${stats.coins >= HINT_COST ? 'affordable' : ''}`}
                     onClick={() => { playClick(); revealHint(); }}
-                    disabled={stats.coins < 50}
-                    style={{
-                      background: stats.coins >= 50 ? 'var(--warning-color)' : 'var(--surface-border)',
-                      color: stats.coins >= 50 ? '#333' : 'var(--text-secondary)',
-                      border: 'none', padding: '0.5rem 1rem', borderRadius: '8px',
-                      display: 'flex', alignItems: 'center', gap: '0.5rem',
-                      cursor: stats.coins >= 50 ? 'pointer' : 'not-allowed',
-                      fontWeight: 'bold', fontSize: '0.85rem'
-                    }}
-                    title="Revelar una letra por 50 monedas"
+                    disabled={stats.coins < HINT_COST}
+                    title={`Revelar una letra por ${HINT_COST} monedas`}
                   >
-                    <Lightbulb size={18} /> Pista (-50 💰)
+                    <Lightbulb size={18} /> Pista (-{HINT_COST} 💰)
                   </button>
                 </div>
               )}

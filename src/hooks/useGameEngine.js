@@ -1,7 +1,13 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { getRandomWord, PALABRAS } from '../data/dictionary';
 
-const HINT_COST = 50;
+export const HINT_COST = 50;
+const TIMER_DURATION_SECONDS = 60;
+const DAILY_CHALLENGE_COIN_MULTIPLIER = 2;
+const MILLIONAIRE_COINS_THRESHOLD = 500;
+const MAX_TOP_STREAKS = 5;
+const MAX_MISTAKES_BY_DIFFICULTY = { easy: 8, normal: 6, hard: 4 };
+const COINS_REWARD_BY_DIFFICULTY = { easy: 10, normal: 20, hard: 30 };
 
 function getDailySeed() {
   // Use UTC components (not local time) so every player gets the same
@@ -23,8 +29,8 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   const [guessedLetters, setGuessedLetters] = useState(new Set());
   const [mistakes, setMistakes] = useState(0);
   const [status, setStatus] = useState('idle'); 
-  const [timeLeft, setTimeLeft] = useState(60);
-  const [lastAction, setLastAction] = useState(null); 
+  const [timeLeft, setTimeLeft] = useState(TIMER_DURATION_SECONDS);
+  const [lastAction, setLastAction] = useState(null);
   const [newAchieved, setNewAchieved] = useState([]);
 
   // Synchronous, render-independent guards against double-processing the
@@ -36,8 +42,8 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   const processedLettersRef = useRef(new Set());
   const hintLockRef = useRef(false);
 
-  const maxMistakes = difficulty === 'easy' ? 8 : difficulty === 'hard' ? 4 : 6;
-  const coinsReward = difficulty === 'easy' ? 10 : difficulty === 'hard' ? 30 : 20;
+  const maxMistakes = MAX_MISTAKES_BY_DIFFICULTY[difficulty] ?? MAX_MISTAKES_BY_DIFFICULTY.normal;
+  const coinsReward = COINS_REWARD_BY_DIFFICULTY[difficulty] ?? COINS_REWARD_BY_DIFFICULTY.normal;
   
   const [stats, setStats] = useState(() => {
     const saved = localStorage.getItem('ahorcado_stats');
@@ -63,7 +69,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       if (currentMistakes === maxMistakes - 1 && !hasAch('survivor')) unlocks.push({ id: 'survivor', name: 'Sobreviviente' });
     }
     
-    if (currentStats.coins >= 500 && !hasAch('millionaire')) unlocks.push({ id: 'millionaire', name: 'Millonario' });
+    if (currentStats.coins >= MILLIONAIRE_COINS_THRESHOLD && !hasAch('millionaire')) unlocks.push({ id: 'millionaire', name: 'Millonario' });
 
     if (unlocks.length > 0) {
       setNewAchieved(unlocks.map(u => u.name));
@@ -97,7 +103,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     processedLettersRef.current = new Set();
     setGuessedLetters(new Set());
     setMistakes(0);
-    setTimeLeft(60);
+    setTimeLeft(TIMER_DURATION_SECONDS);
     setStatus('playing');
     setLastAction(null);
   }, []);
@@ -122,6 +128,12 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     });
   }, [checkAchievements]);
 
+  // Named `revealHint` (not `useHint`): despite living inside a hook, this
+  // is a plain callback the UI invokes from an onClick handler, not a hook
+  // itself. The `use`-prefixed name previously tripped oxlint's
+  // react-hooks/rules-of-hooks check, which treats any `use*` identifier as
+  // a hook by convention and flags it as an illegal conditional/callback
+  // hook call - a real (pre-existing) `npm run lint` error.
   const revealHint = useCallback(() => {
     if (status !== 'playing' || hintLockRef.current) return false;
     if (stats.coins < HINT_COST) return false;
@@ -165,7 +177,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     if (newStreak > 0) {
       newTop.push(newStreak);
       newTop.sort((a, b) => b - a);
-      newTop = newTop.slice(0, 5);
+      newTop = newTop.slice(0, MAX_TOP_STREAKS);
     }
     return { ...s, losses: s.losses + 1, streak: 0, topStreaks: newTop };
   }, []);
@@ -248,7 +260,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       setStatus('won');
       setLastAction('win');
       
-      const multiplier = category.includes('Reto Diario') ? 2 : 1;
+      const multiplier = category.includes('Reto Diario') ? DAILY_CHALLENGE_COIN_MULTIPLIER : 1;
       const earnedCoins = coinsReward * multiplier;
 
       setStats(s => {

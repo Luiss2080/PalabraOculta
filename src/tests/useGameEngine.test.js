@@ -194,7 +194,7 @@ describe('useGameEngine', () => {
     });
   });
 
-  describe('useHint', () => {
+  describe('revealHint', () => {
     test('does nothing when the player cannot afford it', () => {
       const { result } = renderHook(() => useGameEngine('normal', false));
       act(() => result.current.startNewGame(null, 'GATO'));
@@ -203,7 +203,7 @@ describe('useGameEngine', () => {
 
       let hintUsed;
       act(() => {
-        hintUsed = result.current.useHint();
+        hintUsed = result.current.revealHint();
       });
 
       expect(hintUsed).toBe(false);
@@ -217,7 +217,7 @@ describe('useGameEngine', () => {
 
       let hintUsed;
       act(() => {
-        hintUsed = result.current.useHint();
+        hintUsed = result.current.revealHint();
       });
 
       expect(hintUsed).toBe(true);
@@ -226,13 +226,13 @@ describe('useGameEngine', () => {
     });
   });
 
-  describe('updateUnlocks', () => {
+  describe('purchaseUnlock', () => {
     test('adds the item to unlocks and subtracts its price from coins', () => {
       localStorage.setItem('ahorcado_stats', JSON.stringify({ coins: 200, unlocks: [] }));
       const { result } = renderHook(() => useGameEngine('normal', false));
 
       act(() => {
-        result.current.updateUnlocks([...result.current.stats.unlocks, 'cat_movies'], 100);
+        result.current.purchaseUnlock('cat_movies', 100);
       });
 
       expect(result.current.stats.unlocks).toContain('cat_movies');

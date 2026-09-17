@@ -1,11 +1,3 @@
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
 .parallax-container {
   width: 100%;
   max-width: 600px;
@@ -84,4 +76,52 @@
 
 .cat-buttons button:hover {
   background: var(--primary-hover);
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  margin-bottom: 1.5rem;
+}
+
+.profile-header .profile-avatar {
+  font-size: 2rem;
+}
+
+.profile-header h1 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.profile-header .profile-streak {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+.hint-button-row {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.hint-button {
+  background: var(--surface-border);
+  color: var(--text-secondary);
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: not-allowed;
+  font-weight: bold;
+  font-size: 0.85rem;
+}
+
+.hint-button.affordable {
+  background: var(--warning-color);
+  color: #333;
+  cursor: pointer;
 }
