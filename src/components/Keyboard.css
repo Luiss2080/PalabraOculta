@@ -17,6 +17,8 @@
   padding: 0.75rem 1rem;
   box-shadow: var(--kbd-shadow);
   min-width: 3rem;
+  /* Meets the 44x44px minimum recommended touch-target size (WCAG 2.5.5). */
+  min-height: 44px;
   user-select: none;
 }
 

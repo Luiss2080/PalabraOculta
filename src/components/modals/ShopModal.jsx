@@ -1,6 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, ShoppingCart, Lock, CheckCircle } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 const ITEMS = [
@@ -10,6 +11,7 @@ const ITEMS = [
 ];
 
 const ShopModal = ({ isOpen, onClose, coins, unlocks, onPurchase }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -24,10 +26,15 @@ const ShopModal = ({ isOpen, onClose, coins, unlocks, onPurchase }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="shop-modal-title"
+            tabIndex={-1}
           >
-            <button className="modal-close" onClick={onClose}><X size={24} /></button>
+            <button className="modal-close" onClick={onClose} aria-label="Cerrar"><X size={24} /></button>
             <div className="shop-header">
-              <h2><ShoppingCart /> Tienda</h2>
+              <h2 id="shop-modal-title"><ShoppingCart /> Tienda</h2>
               <div className="shop-coin-balance">💰 {coins}</div>
             </div>
 

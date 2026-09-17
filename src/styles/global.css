@@ -82,3 +82,27 @@ button {
 button:active {
   transform: scale(0.96);
 }
+
+/* Visually hides content while keeping it available to screen readers,
+   used for the live-region status announcements in App.jsx. */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Visible focus ring for keyboard users. Only appears for keyboard/assistive
+   navigation (not mouse clicks) thanks to :focus-visible. */
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+a:focus-visible {
+  outline: 3px solid var(--primary-color);
+  outline-offset: 2px;
+}

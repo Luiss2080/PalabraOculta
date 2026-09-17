@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { getRandomWord, PALABRAS } from '../data/dictionary';
 
 export const HINT_COST = 50;
@@ -10,8 +10,12 @@ const MAX_MISTAKES_BY_DIFFICULTY = { easy: 8, normal: 6, hard: 4 };
 const COINS_REWARD_BY_DIFFICULTY = { easy: 10, normal: 20, hard: 30 };
 
 function getDailySeed() {
+  // Use UTC components (not local time) so every player gets the same
+  // "Reto Diario" word on the same calendar day regardless of timezone.
+  // Using local time meant a player in UTC-4 and one in UTC+8 could see
+  // two different daily words at any given moment.
   const date = new Date();
-  return date.getFullYear() * 10000 + (date.getMonth() + 1) * 100 + date.getDate();
+  return date.getUTCFullYear() * 10000 + (date.getUTCMonth() + 1) * 100 + date.getUTCDate();
 }
 
 function seededRandom(seed) {
@@ -28,6 +32,15 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   const [timeLeft, setTimeLeft] = useState(TIMER_DURATION_SECONDS);
   const [lastAction, setLastAction] = useState(null);
   const [newAchieved, setNewAchieved] = useState([]);
+
+  // Synchronous, render-independent guards against double-processing the
+  // same input twice (e.g. a key-repeat event or a double-click firing
+  // before React has re-rendered the "already guessed"/"can't afford"
+  // disabled state). Plain state reads inside guess()/revealHint() are not
+  // enough because two calls can both read the same stale closure value
+  // when they happen within the same React batch.
+  const processedLettersRef = useRef(new Set());
+  const hintLockRef = useRef(false);
 
   const maxMistakes = MAX_MISTAKES_BY_DIFFICULTY[difficulty] ?? MAX_MISTAKES_BY_DIFFICULTY.normal;
   const coinsReward = COINS_REWARD_BY_DIFFICULTY[difficulty] ?? COINS_REWARD_BY_DIFFICULTY.normal;
@@ -87,6 +100,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
       setCategory(category);
     }
     
+    processedLettersRef.current = new Set();
     setGuessedLetters(new Set());
     setMistakes(0);
     setTimeLeft(TIMER_DURATION_SECONDS);
@@ -98,14 +112,22 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     localStorage.setItem('ahorcado_stats', JSON.stringify(stats));
   }, [stats]);
 
-  const updateUnlocks = useCallback((newUnlocks, cost) => {
+  // Takes the item id and its price rather than a precomputed unlocks array,
+  // and does the "already owned?" / "can afford it?" checks *inside* the
+  // setStats updater against the latest state. That makes it safe against a
+  // rapid double-click on the buy button: React applies functional updaters
+  // one after another against the freshest state, so the second call always
+  // sees the first one's result and will no-op instead of double-charging
+  // (which could previously send coins negative) or duplicating the unlock.
+  const purchaseUnlock = useCallback((itemId, cost) => {
     setStats(s => {
-      const newState = { ...s, unlocks: newUnlocks, coins: s.coins - cost };
+      if (s.unlocks.includes(itemId) || s.coins < cost) return s;
+      const newState = { ...s, unlocks: [...s.unlocks, itemId], coins: s.coins - cost };
       checkAchievements(newState, 0, false);
       return newState;
     });
   }, [checkAchievements]);
-  
+
   // Named `revealHint` (not `useHint`): despite living inside a hook, this
   // is a plain callback the UI invokes from an onClick handler, not a hook
   // itself. The `use`-prefixed name previously tripped oxlint's
@@ -113,24 +135,41 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
   // a hook by convention and flags it as an illegal conditional/callback
   // hook call - a real (pre-existing) `npm run lint` error.
   const revealHint = useCallback(() => {
-    if (status !== 'playing' || stats.coins < HINT_COST) return false;
+    if (status !== 'playing' || hintLockRef.current) return false;
+    if (stats.coins < HINT_COST) return false;
 
     const unrevealed = word.split('').filter(l => !guessedLetters.has(l));
     if (unrevealed.length === 0) return false;
 
-    const randomLetter = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    // Lock synchronously before touching any state: a double-click/rapid
+    // repeat firing before this component re-renders would otherwise read
+    // the same stale `stats.coins` above and reveal two letters for the
+    // price of one (or push coins negative).
+    hintLockRef.current = true;
 
-    setStats(s => ({ ...s, coins: s.coins - HINT_COST }));
-    
+    const randomLetter = unrevealed[Math.floor(Math.random() * unrevealed.length)];
+    processedLettersRef.current.add(randomLetter);
+
+    setStats(s => {
+      if (s.coins < HINT_COST) return s; // defensive re-check against stale reads
+      return { ...s, coins: s.coins - HINT_COST };
+    });
+
     setGuessedLetters(prev => {
       const newSet = new Set(prev);
       newSet.add(randomLetter);
       return newSet;
     });
     setLastAction('correct');
-    
+
     return true;
   }, [word, guessedLetters, status, stats.coins]);
+
+  // Release the hint lock once the coin deduction has actually landed in
+  // state, so a genuinely new hint request (after a real render) is allowed.
+  useEffect(() => {
+    hintLockRef.current = false;
+  }, [stats.coins]);
 
   const handleLoss = useCallback((s) => {
     const newStreak = s.streak;
@@ -170,9 +209,15 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
 
   const guess = useCallback((letter) => {
     if (status !== 'playing') return;
-    
+
     const upperLetter = letter.toUpperCase();
-    if (guessedLetters.has(upperLetter)) return;
+    // Synchronous guard: prevents a double-click or a browser key-repeat
+    // event on the same letter from being processed twice (which used to
+    // risk double-decrementing lives) even when the two events fire before
+    // React re-renders the disabled keyboard button / updates
+    // `guessedLetters` state.
+    if (processedLettersRef.current.has(upperLetter)) return;
+    processedLettersRef.current.add(upperLetter);
 
     setGuessedLetters(prev => {
       const newSet = new Set(prev);
@@ -181,18 +226,21 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     });
 
     if (!word.includes(upperLetter)) {
-      const newMistakes = mistakes + 1;
-      setMistakes(newMistakes);
-      setLastAction('wrong');
-      if (newMistakes >= maxMistakes) {
-        setStatus('lost');
-        setLastAction('lose');
-        setStats(handleLoss);
-      }
+      setMistakes(prevMistakes => {
+        const newMistakes = prevMistakes + 1;
+        if (newMistakes >= maxMistakes) {
+          setStatus('lost');
+          setLastAction('lose');
+          setStats(handleLoss);
+        } else {
+          setLastAction('wrong');
+        }
+        return newMistakes;
+      });
     } else {
       setLastAction('correct');
     }
-  }, [word, status, guessedLetters, mistakes, maxMistakes, handleLoss]);
+  }, [word, status, maxMistakes, handleLoss]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -238,7 +286,7 @@ export function useGameEngine(difficulty = 'normal', useTimer = false) {
     guess,
     revealHint,
     maxMistakes,
-    updateUnlocks,
+    purchaseUnlock,
     hardReset
   };
 }

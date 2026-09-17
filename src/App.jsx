@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameEngine, HINT_COST } from './hooks/useGameEngine';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import HangmanFigure from './components/HangmanFigure';
@@ -73,7 +73,7 @@ function App() {
     guess,
     revealHint,
     maxMistakes,
-    updateUnlocks,
+    purchaseUnlock,
     hardReset
   } = useGameEngine(difficulty, useTimer);
 
@@ -97,6 +97,34 @@ function App() {
       playWin();
     }
   }, [newAchieved, addToast, playWin, setNewAchieved]);
+
+  // Check URL for challenges. The word is user-supplied and travels through
+  // a public link, so it's validated before use: `atob` throws on malformed
+  // Base64 (tampered/truncated links), and even once decoded, the result
+  // could contain digits, symbols or an unreasonable length (a manually
+  // crafted URL bypasses ChallengeModal's own [A-Za-zÑñ] input filter). An
+  // unplayable word (e.g. containing characters no key on the keyboard can
+  // ever match) would otherwise make the challenge impossible to win.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reto = params.get('reto');
+    if (!reto) return;
+
+    try {
+      const decoded = atob(reto).toUpperCase().trim();
+      const isValidWord = /^[A-ZÑ]{2,20}$/.test(decoded);
+      if (isValidWord) {
+        setChallengeWord(decoded);
+        return;
+      }
+    } catch {
+      // fall through to the invalid-link handling below
+    }
+
+    addToast('El enlace de reto no es válido. Se inició una partida aleatoria.');
+    // Drop the bad query param so it doesn't keep re-triggering the toast.
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [addToast]);
 
   // Initialize game on first load
   useEffect(() => {
@@ -137,10 +165,22 @@ function App() {
     playClick();
     guess(letter);
   };
+
+  // Human-readable status announced to screen-reader users via an aria-live region.
+  // Covers correct/incorrect guesses, remaining lives, and win/loss so non-visual
+  // players get the same feedback sighted players get from the hangman figure and word.
+  const liveMessage = useMemo(() => {
+    if (status === 'won') return `¡Ganaste! La palabra era ${word}.`;
+    if (status === 'lost') return `Perdiste. La palabra era ${word}.`;
+    const remaining = maxMistakes - mistakes;
+    if (lastAction === 'correct') return `Letra correcta. Te quedan ${remaining} intentos.`;
+    if (lastAction === 'wrong') return `Letra incorrecta. Te quedan ${remaining} intentos.`;
+    return '';
+  }, [status, lastAction, word, mistakes, maxMistakes]);
   
   const handlePurchase = (item) => {
     playWin();
-    updateUnlocks([...stats.unlocks, item.id], item.price);
+    purchaseUnlock(item.id, item.price);
   };
 
   const renderWord = () => {
@@ -154,6 +194,9 @@ function App() {
   return (
     <>
       <ParticlesBackground theme={theme} accentColor={accentColor} />
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {liveMessage}
+      </div>
       <ToastNotification toasts={toasts} removeToast={removeToast} />
       {status === 'won' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} colors={[accentColor, '#fcd34d', '#ffffff']} />}
       

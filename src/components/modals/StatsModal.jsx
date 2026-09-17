@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BarChart2, Trophy, Flame, Coins, Lock, CheckCircle, ListOrdered } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 const ACHIEVEMENTS_LIST = [
@@ -12,6 +13,7 @@ const ACHIEVEMENTS_LIST = [
 
 const StatsModal = ({ isOpen, onClose, stats }) => {
   const [tab, setTab] = useState('stats'); // 'stats', 'achievements', 'leaderboard'
+  const modalRef = useFocusTrap(isOpen, onClose);
 
   const winRate = stats.wins + stats.losses > 0 
     ? Math.round((stats.wins / (stats.wins + stats.losses)) * 100) 
@@ -31,14 +33,19 @@ const StatsModal = ({ isOpen, onClose, stats }) => {
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="stats-modal-title"
+            tabIndex={-1}
           >
-            <button className="modal-close" onClick={onClose}><X size={24} /></button>
-            <h2><BarChart2 /> Perfil del Jugador</h2>
+            <button className="modal-close" onClick={onClose} aria-label="Cerrar"><X size={24} /></button>
+            <h2 id="stats-modal-title"><BarChart2 /> Perfil del Jugador</h2>
             
-            <div className="btn-group" style={{ marginBottom: '1.5rem', display: 'flex' }}>
-              <button className={tab === 'stats' ? 'active' : ''} onClick={() => setTab('stats')} style={{flex: 1}}>General</button>
-              <button className={tab === 'achievements' ? 'active' : ''} onClick={() => setTab('achievements')} style={{flex: 1}}>Trofeos</button>
-              <button className={tab === 'leaderboard' ? 'active' : ''} onClick={() => setTab('leaderboard')} style={{flex: 1}}>Top 5</button>
+            <div className="btn-group" role="tablist" aria-label="Secciones del perfil" style={{ marginBottom: '1.5rem', display: 'flex' }}>
+              <button role="tab" aria-selected={tab === 'stats'} className={tab === 'stats' ? 'active' : ''} onClick={() => setTab('stats')} style={{flex: 1}}>General</button>
+              <button role="tab" aria-selected={tab === 'achievements'} className={tab === 'achievements' ? 'active' : ''} onClick={() => setTab('achievements')} style={{flex: 1}}>Trofeos</button>
+              <button role="tab" aria-selected={tab === 'leaderboard'} className={tab === 'leaderboard' ? 'active' : ''} onClick={() => setTab('leaderboard')} style={{flex: 1}}>Top 5</button>
             </div>
 
             {tab === 'stats' && (
