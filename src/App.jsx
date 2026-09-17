@@ -55,9 +55,9 @@ function App() {
     setNewAchieved,
     startNewGame,
     guess,
-    useHint,
+    revealHint,
     maxMistakes,
-    updateUnlocks,
+    purchaseUnlock,
     hardReset
   } = useGameEngine(difficulty, useTimer);
 
@@ -82,21 +82,33 @@ function App() {
     }
   }, [newAchieved, addToast, playWin, setNewAchieved]);
 
-  // Check URL for challenges
+  // Check URL for challenges. The word is user-supplied and travels through
+  // a public link, so it's validated before use: `atob` throws on malformed
+  // Base64 (tampered/truncated links), and even once decoded, the result
+  // could contain digits, symbols or an unreasonable length (a manually
+  // crafted URL bypasses ChallengeModal's own [A-Za-zÑñ] input filter). An
+  // unplayable word (e.g. containing characters no key on the keyboard can
+  // ever match) would otherwise make the challenge impossible to win.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reto = params.get('reto');
-    if (reto) {
-      try {
-        const decoded = atob(reto);
-        if (decoded && decoded.length > 0) {
-          setChallengeWord(decoded);
-        }
-      } catch (e) {
-        console.error("Reto inválido");
+    if (!reto) return;
+
+    try {
+      const decoded = atob(reto).toUpperCase().trim();
+      const isValidWord = /^[A-ZÑ]{2,20}$/.test(decoded);
+      if (isValidWord) {
+        setChallengeWord(decoded);
+        return;
       }
+    } catch {
+      // fall through to the invalid-link handling below
     }
-  }, []);
+
+    addToast('El enlace de reto no es válido. Se inició una partida aleatoria.');
+    // Drop the bad query param so it doesn't keep re-triggering the toast.
+    window.history.replaceState({}, '', window.location.pathname);
+  }, [addToast]);
 
   // Initialize game on first load
   useEffect(() => {
@@ -140,7 +152,7 @@ function App() {
   
   const handlePurchase = (item) => {
     playWin();
-    updateUnlocks([...stats.unlocks, item.id], item.price);
+    purchaseUnlock(item.id, item.price);
   };
 
   const renderWord = () => {
@@ -205,7 +217,7 @@ function App() {
               {status === 'playing' && (
                 <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
                   <button 
-                    onClick={() => { playClick(); useHint(); }}
+                    onClick={() => { playClick(); revealHint(); }}
                     disabled={stats.coins < 50}
                     style={{
                       background: stats.coins >= 50 ? 'var(--warning-color)' : 'var(--surface-border)',
