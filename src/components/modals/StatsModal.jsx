@@ -42,25 +42,25 @@ const StatsModal = ({ isOpen, onClose, stats }) => {
             </div>
 
             {tab === 'stats' && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                  <Trophy size={32} color="var(--success-color)" style={{ margin: '0 auto 0.5rem' }} />
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.wins}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Victorias</div>
+              <div className="stats-grid">
+                <div className="stat-card">
+                  <Trophy size={32} color="var(--success-color)" className="stat-card-icon" />
+                  <div className="stat-card-value">{stats.wins}</div>
+                  <div className="stat-card-label">Victorias</div>
                 </div>
-                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                  <Flame size={32} color="var(--danger-color)" style={{ margin: '0 auto 0.5rem' }} />
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.streak}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Racha Actual</div>
+                <div className="stat-card">
+                  <Flame size={32} color="var(--danger-color)" className="stat-card-icon" />
+                  <div className="stat-card-value">{stats.streak}</div>
+                  <div className="stat-card-label">Racha Actual</div>
                 </div>
-                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{winRate}%</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Win Rate</div>
+                <div className="stat-card">
+                  <div className="stat-card-value">{winRate}%</div>
+                  <div className="stat-card-label">Win Rate</div>
                 </div>
-                <div style={{ background: 'var(--surface-color)', padding: '1rem', borderRadius: '8px', textAlign: 'center' }}>
-                  <Coins size={32} color="var(--warning-color)" style={{ margin: '0 auto 0.5rem' }} />
-                  <div style={{ fontSize: '1.5rem', fontWeight: 'bold' }}>{stats.coins || 0}</div>
-                  <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)' }}>Monedas</div>
+                <div className="stat-card">
+                  <Coins size={32} color="var(--warning-color)" className="stat-card-icon" />
+                  <div className="stat-card-value">{stats.coins || 0}</div>
+                  <div className="stat-card-label">Monedas</div>
                 </div>
               </div>
             )}
