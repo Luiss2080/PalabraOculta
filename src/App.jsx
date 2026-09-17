@@ -14,7 +14,7 @@ import ParticlesBackground from './components/ParticlesBackground';
 import { PALABRAS } from './data/dictionary';
 import Confetti from 'react-confetti';
 import Tilt from 'react-parallax-tilt';
-import { Lightbulb, User } from 'lucide-react';
+import { Lightbulb } from 'lucide-react';
 import './App.css';
 
 function App() {
@@ -36,7 +36,23 @@ function App() {
   const [isChallengeOpen, setChallengeOpen] = useState(false);
   
   const [windowSize, setWindowSize] = useState({ width: window.innerWidth, height: window.innerHeight });
-  const [challengeWord, setChallengeWord] = useState(null);
+  // Derived once, synchronously, from the URL's `reto` param (if any) using
+  // a lazy initializer instead of an effect: the value is already knowable
+  // during the very first render, so there's no need to render once without
+  // it and then trigger a second render just to set it (oxlint's
+  // react/set-state-in-effect flags that pattern).
+  const [challengeWord, setChallengeWord] = useState(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reto = params.get('reto');
+    if (!reto) return null;
+    try {
+      const decoded = atob(reto);
+      return decoded && decoded.length > 0 ? decoded : null;
+    } catch {
+      console.error('Reto inválido');
+      return null;
+    }
+  });
 
   const [toasts, setToasts] = useState([]);
 
@@ -81,22 +97,6 @@ function App() {
       playWin();
     }
   }, [newAchieved, addToast, playWin, setNewAchieved]);
-
-  // Check URL for challenges
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const reto = params.get('reto');
-    if (reto) {
-      try {
-        const decoded = atob(reto);
-        if (decoded && decoded.length > 0) {
-          setChallengeWord(decoded);
-        }
-      } catch (e) {
-        console.error("Reto inválido");
-      }
-    }
-  }, []);
 
   // Initialize game on first load
   useEffect(() => {

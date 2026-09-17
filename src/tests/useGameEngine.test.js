@@ -1,6 +1,6 @@
 import { renderHook, act } from '@testing-library/react';
 import { useGameEngine } from '../hooks/useGameEngine';
-import { expect, test, describe, beforeEach, vi } from 'vitest';
+import { expect, test, describe, beforeEach } from 'vitest';
 
 describe('useGameEngine', () => {
   beforeEach(() => {

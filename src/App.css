@@ -1,11 +1,3 @@
-.stats-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 1rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
 .parallax-container {
   width: 100%;
   max-width: 600px;
