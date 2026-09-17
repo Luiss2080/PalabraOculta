@@ -32,6 +32,12 @@
   border: none;
   color: var(--text-secondary);
   padding: 0.5rem;
+  /* Meets the 44x44px minimum recommended touch-target size (WCAG 2.5.5). */
+  min-width: 44px;
+  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .modal-close:hover {

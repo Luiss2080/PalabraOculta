@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Users, Copy, Check } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 const ChallengeModal = ({ isOpen, onClose }) => {
   const [customWord, setCustomWord] = useState('');
   const [copied, setCopied] = useState(false);
+  const modalRef = useFocusTrap(isOpen, onClose);
 
   const link = customWord.length > 2 
     ? `${window.location.origin}${window.location.pathname}?reto=${btoa(customWord.toUpperCase().trim())}`
@@ -27,14 +29,19 @@ const ChallengeModal = ({ isOpen, onClose }) => {
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
         >
-          <motion.div 
+          <motion.div
             className="modal-content"
             initial={{ scale: 0.9, opacity: 0 }}
             animate={{ scale: 1, opacity: 1 }}
             exit={{ scale: 0.9, opacity: 0 }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="challenge-modal-title"
+            tabIndex={-1}
           >
-            <button className="modal-close" onClick={onClose}><X size={24} /></button>
-            <h2><Users /> Desafiar a un amigo</h2>
+            <button className="modal-close" onClick={onClose} aria-label="Cerrar"><X size={24} /></button>
+            <h2 id="challenge-modal-title"><Users /> Desafiar a un amigo</h2>
             
             <div style={{ marginTop: '1.5rem' }}>
               <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>

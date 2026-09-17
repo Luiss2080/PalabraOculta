@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { useGameEngine } from './hooks/useGameEngine';
 import { useSoundEffects } from './hooks/useSoundEffects';
 import HangmanFigure from './components/HangmanFigure';
@@ -149,6 +149,18 @@ function App() {
     playClick();
     guess(letter);
   };
+
+  // Human-readable status announced to screen-reader users via an aria-live region.
+  // Covers correct/incorrect guesses, remaining lives, and win/loss so non-visual
+  // players get the same feedback sighted players get from the hangman figure and word.
+  const liveMessage = useMemo(() => {
+    if (status === 'won') return `¡Ganaste! La palabra era ${word}.`;
+    if (status === 'lost') return `Perdiste. La palabra era ${word}.`;
+    const remaining = maxMistakes - mistakes;
+    if (lastAction === 'correct') return `Letra correcta. Te quedan ${remaining} intentos.`;
+    if (lastAction === 'wrong') return `Letra incorrecta. Te quedan ${remaining} intentos.`;
+    return '';
+  }, [status, lastAction, word, mistakes, maxMistakes]);
   
   const handlePurchase = (item) => {
     playWin();
@@ -166,6 +178,9 @@ function App() {
   return (
     <>
       <ParticlesBackground theme={theme} accentColor={accentColor} />
+      <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+        {liveMessage}
+      </div>
       <ToastNotification toasts={toasts} removeToast={removeToast} />
       {status === 'won' && <Confetti width={windowSize.width} height={windowSize.height} recycle={false} numberOfPieces={500} colors={[accentColor, '#fcd34d', '#ffffff']} />}
       

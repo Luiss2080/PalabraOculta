@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, Settings as SettingsIcon, AlertTriangle, User, Volume2, Palette } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 const AVATARS = ['🤖', '👽', '👻', '🦊', '🦁', '🦉', '🐱', '🐶'];
@@ -23,6 +24,7 @@ const SettingsModal = ({
   onHardReset
 }) => {
   const [confirmReset, setConfirmReset] = useState(false);
+  const modalRef = useFocusTrap(isOpen, onClose);
 
   const handleReset = () => {
     if (confirmReset) {
@@ -49,9 +51,14 @@ const SettingsModal = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: 50, opacity: 0 }}
             style={{ maxHeight: '90vh', overflowY: 'auto' }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="settings-modal-title"
+            tabIndex={-1}
           >
-            <button className="modal-close" onClick={onClose}><X size={24} /></button>
-            <h2><SettingsIcon /> Ajustes & Perfil</h2>
+            <button className="modal-close" onClick={onClose} aria-label="Cerrar"><X size={24} /></button>
+            <h2 id="settings-modal-title"><SettingsIcon /> Ajustes & Perfil</h2>
             
             {/* Perfil */}
             <div className="settings-section">
