@@ -1,9 +1,11 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { X, BookOpen, Target, Award, Keyboard } from 'lucide-react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 import './Modal.css';
 
 const ManualModal = ({ isOpen, onClose }) => {
+  const modalRef = useFocusTrap(isOpen, onClose);
   return (
     <AnimatePresence>
       {isOpen && (
@@ -19,9 +21,14 @@ const ManualModal = ({ isOpen, onClose }) => {
             animate={{ x: 0, opacity: 1 }}
             exit={{ x: -50, opacity: 0 }}
             style={{ maxHeight: '80vh', overflowY: 'auto' }}
+            ref={modalRef}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="manual-modal-title"
+            tabIndex={-1}
           >
-            <button className="modal-close" onClick={onClose}><X size={24} /></button>
-            <h2><BookOpen /> Manual de Uso</h2>
+            <button className="modal-close" onClick={onClose} aria-label="Cerrar"><X size={24} /></button>
+            <h2 id="manual-modal-title"><BookOpen /> Manual de Uso</h2>
             
             <div style={{ marginTop: '1.5rem', lineHeight: '1.6' }}>
               <p>¡Bienvenido a <strong>Ahorcado Premium</strong>!</p>
