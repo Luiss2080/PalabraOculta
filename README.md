@@ -1,154 +1,125 @@
 <div align="center">
-  <img src="public/favicon.svg" alt="Logo" width="120" />
-  <h1>🎯 PalabraOculta</h1>
-
-  [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](#)
-  [![Vite](https://img.shields.io/badge/Vite-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E)](#)
-  [![Framer Motion](https://img.shields.io/badge/Framer_Motion-black?style=for-the-badge&logo=framer&logoColor=blue)](#)
-  [![Vitest](https://img.shields.io/badge/Vitest-6E9F18?style=for-the-badge&logo=vitest&logoColor=white)](#)
+  <img src="docs/assets/logo.svg" width="96" alt="Logo de PalabraOculta" />
+  <h1>PalabraOculta</h1>
+  <p><b>El ahorcado en español como app web: monedas, logros, reto diario y desafíos a amigos por enlace.</b></p>
+  <img src="https://img.shields.io/badge/estado-funcional-7c3aed?style=for-the-badge" alt="Estado: funcional" />
+  <img src="https://img.shields.io/badge/React-19-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React 19" />
+  <img src="https://img.shields.io/badge/Vite-8-B73BFE?style=for-the-badge&logo=vite&logoColor=FFD62E" alt="Vite 8" />
+  <img src="https://img.shields.io/badge/tests-27%20pasan-2ea44f?style=for-the-badge" alt="27 tests pasan" />
+  <a href="https://github.com/Luiss2080/PalabraOculta/actions/workflows/ci.yml"><img src="https://github.com/Luiss2080/PalabraOculta/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/licencia-MIT-blue?style=for-the-badge" alt="Licencia MIT" />
+  <p>
+    <a href="#-inicio-rápido">Inicio rápido</a> ·
+    <a href="#-características">Características</a> ·
+    <a href="#-arquitectura">Arquitectura</a> ·
+    <a href="#-pruebas">Pruebas</a> ·
+    <a href="#-lo-que-todavía-no-existe">Limitaciones</a>
+  </p>
 </div>
 
-<br />
+**PalabraOculta** es el clásico ahorcado reconstruido con React y Vite: teclado en pantalla y físico, tres dificultades, una economía de monedas con tienda y pistas, logros, reto diario y desafíos por enlace. Corre 100% en el navegador: **no hay backend, cuentas ni ranking en línea**; todo el progreso vive en el `localStorage` de tu navegador.
 
-> El clásico juego del ahorcado, reconstruido como una experiencia web moderna:
-> gamificación con monedas y logros, reto diario, desafíos asíncronos por
-> enlace, y una interfaz con glassmorphism, partículas y parallax 3D.
+## 🎬 Vista rápida
 
----
+<div align="center">
+  <img src="docs/screenshots/juego.png" width="720" alt="Pantalla de juego de PalabraOculta: categoría Profesiones, 6 intentos, horca vacía, casillas de la palabra y teclado con la Ñ" />
+</div>
+
+> Captura real de la build de producción servida en local (perfil por defecto "Jugador 1").
 
 ## ✨ Características
 
-### 🎮 Gamificación y economía
-- **Monedas y Tienda (💰):** cada victoria otorga monedas según la dificultad
-  elegida; gástalas para desbloquear categorías adicionales.
-- **Pistas:** con suficientes monedas, revela una letra correcta al vuelo
-  durante una partida en curso.
-- **Logros:** se desbloquean automáticamente al ganar sin fallos, sobrevivir
-  con un solo intento restante, ganar tu primera partida, o acumular una
-  fortuna en monedas.
-- **Rachas y ranking histórico:** la racha de victorias consecutivas se
-  registra, y tus mejores 5 rachas quedan guardadas para consultarlas luego.
+| Característica | Detalle |
+| --- | --- |
+| Dificultades | Fácil 8 intentos, Normal 6, Difícil 4; la recompensa por victoria es de 10, 20 o 30 monedas respectivamente. |
+| Categorías | Frutas, Animales, Países y Profesiones; Películas (100 monedas) y Videojuegos (150) se desbloquean en la tienda. |
+| Pistas | Revelan una letra a cambio de monedas (50 en la UI). |
+| Logros | Primera Sangre, Impecable (sin fallos), Sobreviviente (ganar con un solo intento restante) y Millonario. |
+| Rachas | Racha actual y las 5 mejores rachas guardadas. |
+| Reto diario | Palabra elegida con una semilla derivada de la fecha UTC: la misma para todos ese día. |
+| Reto a un amigo | Genera un enlace `?reto=` con la palabra en Base64 (ofuscación, **no** cifrado); se valida antes de usarse. |
+| Interfaz | Tema claro/oscuro, color de acento, perfil local, parallax (`react-parallax-tilt`), partículas (`@tsparticles`), confeti y animaciones (`framer-motion`). |
+| Sonido | Efectos generados con Web Audio API, con control de volumen. |
+| Accesibilidad | Juego completo con teclado físico (incluida la Ñ) y foco atrapado en los modales. |
 
-### 🌐 Interacción social
-- **Reto a un amigo:** escribe una palabra secreta y genera un enlace (la
-  palabra viaja codificada en Base64 en la URL) para que cualquier amigo la
-  intente adivinar.
-- **Reto Diario:** una palabra elegida con una semilla determinística por
-  fecha, para que abrir la app varias veces el mismo día te presente
-  siempre el mismo desafío — y paga el doble de monedas al ganarlo.
+## 🏗️ Arquitectura
 
-### 🎨 Interfaz
-- **Parallax 3D** en el panel principal (`react-parallax-tilt`) y **fondo de
-  partículas** interactivo (`@tsparticles/react`).
-- **Tema claro/oscuro** y **color de acento** personalizables, con
-  variables CSS para theming consistente.
-- **Perfil de jugador:** avatar y nombre editables, guardados localmente.
-- Animaciones de transición y modales con `framer-motion`, y confeti al
-  ganar con `react-confetti`.
-
-### 🔊 Sonido
-- Efectos de sonido generados en tiempo real con la Web Audio API (sin
-  archivos de audio que descargar), con control de volumen.
-
-### ♿ Accesibilidad
-- Se puede jugar por completo con el teclado físico (además del teclado en
-  pantalla), con anuncios de estado para lectores de pantalla y navegación
-  por foco en los modales.
-
----
-
-## 🕹️ Cómo jugar
-
-1. Al abrir la app se elige una palabra al azar de una categoría (o la que
-   hayas seleccionado) y se dibuja el tablero.
-2. Adivina letras usando el teclado en pantalla o tu teclado físico
-   (A-Z, incluida la Ñ) antes de que se complete el dibujo del ahorcado.
-3. Cada letra correcta revela todas sus apariciones en la palabra; cada
-   letra incorrecta resta un intento. La cantidad de intentos disponibles
-   depende de la dificultad (Fácil: 8, Normal: 6, Difícil: 4).
-4. Gana monedas al acertar, gástalas en pistas o en la tienda, y compite
-   contra tu propia racha o contra el Reto Diario.
-
----
-
-## 🚀 Instalación y uso local
-
-```bash
-git clone https://github.com/Luiss2080/ahorcado-web.git
-cd ahorcado-web
-npm install
-npm run dev
+```mermaid
+flowchart TD
+  M["main.jsx"] --> A["App.jsx<br/>tema, dificultad, perfil, modales"]
+  A --> G["hooks/useGameEngine.js<br/>partida, monedas, logros, reto diario"]
+  A --> S["hooks/useSoundEffects.js<br/>Web Audio API"]
+  A --> C["components/<br/>Header, Keyboard, HangmanFigure, modales"]
+  G --> D["data/dictionary.js<br/>categorías y palabras"]
+  G -->|"stats"| L[("localStorage")]
+  A -->|"ajustes y perfil"| L
 ```
 
-El servidor de desarrollo (Vite) queda disponible típicamente en
-`http://localhost:5173`.
+## 🚀 Inicio rápido
 
-Otros comandos disponibles:
+| Requisito | Versión |
+| --- | --- |
+| Node.js | 20 o superior (`engines` y CI usan 20) |
+| npm | el que trae Node |
 
 ```bash
-npm run build     # build de producción
-npm run preview   # sirve el build de producción localmente
-npm run lint      # linting con oxlint
+git clone https://github.com/Luiss2080/PalabraOculta.git
+cd PalabraOculta
+npm ci
+npm run dev        # Vite, normalmente en http://localhost:5173
 ```
 
----
+```bash
+npm run build      # build de producción en dist/
+npm run preview    # sirve la build en local
+npm run lint       # oxlint
+```
 
-## 🧪 Tests
+<details>
+<summary>Estructura de carpetas</summary>
 
-El motor de juego y la lógica auxiliar tienen pruebas unitarias con
-[Vitest](https://vitest.dev/) (y React Testing Library para componentes).
-Para ejecutarlas:
+```text
+src/
+  App.jsx, main.jsx        # raíz de la app
+  hooks/                   # useGameEngine, useSoundEffects, useFocusTrap
+  components/              # Header, Keyboard, HangmanFigure, toasts, modales/
+  data/dictionary.js       # palabras por categoría
+  styles/                  # global.css, theme.css
+  tests/                   # Vitest + React Testing Library
+legacy/                    # versión original en HTML/CSS/JS puro (referencia, sin mantenimiento)
+MANUAL.md                  # manual de usuario
+.github/workflows/ci.yml   # lint + tests + build
+```
+
+</details>
+
+## 🧪 Pruebas
+
+**27 tests** en 3 archivos con [Vitest](https://vitest.dev/) y React Testing Library: motor del juego (`useGameEngine`), diccionario y `ChallengeModal`.
 
 ```bash
 npm test
 ```
 
----
+El workflow de CI (`.github/workflows/ci.yml`) ejecuta `npm ci`, lint, tests y build en cada push a `main` y en cada PR. Verificado localmente: tests 27/27, build correcto; `npm run lint` termina con 2 avisos (`set-state-in-effect`) y sin errores.
 
-## 🛠️ Tecnologías
+## 🔒 Seguridad y privacidad
 
-- **[React 19](https://react.dev/)** + **[Vite](https://vitejs.dev/)** como
-  base de la aplicación.
-- **[framer-motion](https://www.framer.com/motion/)** para las animaciones
-  y transiciones de los modales.
-- **[@tsparticles/react](https://particles.js.org/)** para el fondo de
-  partículas interactivo.
-- **[react-parallax-tilt](https://www.npmjs.com/package/react-parallax-tilt)**
-  para el efecto de parallax 3D del panel principal.
-- **[react-confetti](https://www.npmjs.com/package/react-confetti)** para la
-  celebración al ganar.
-- **[lucide-react](https://lucide.dev/)** para los íconos.
-- **Web Audio API** nativa para los efectos de sonido (sin librerías ni
-  archivos de audio).
-- **[Vitest](https://vitest.dev/)** + **React Testing Library** para las
-  pruebas.
-- **[oxlint](https://oxc.rs/docs/guide/usage/linter.html)** para linting.
-- CSS puro con variables (theming claro/oscuro) — sin framework de estilos.
+- Sin backend ni envío de datos: nombre, avatar, monedas y ajustes se guardan solo en tu navegador.
+- El parámetro `?reto=` se decodifica con validación (una cadena Base64 malformada no rompe la app).
+- Como el reto viaja en Base64, cualquiera que lea el enlace puede ver la palabra.
 
----
+## 🚧 Lo que todavía no existe
 
-## 📁 Arquitectura
-
-- `src/hooks/useGameEngine.js`: el motor lógico del juego — estado de la
-  partida, economía (monedas/tienda/logros), temporizador y reto diario.
-- `src/hooks/useSoundEffects.js`: efectos de sonido aislados vía Web Audio
-  API.
-- `src/data/dictionary.js`: categorías y palabras, y la selección aleatoria.
-- `src/components/`: componentes de UI (teclado, figura del ahorcado,
-  modales, notificaciones).
-- `legacy/`: la versión original en HTML/CSS/JS puro (sin dependencias),
-  conservada como referencia histórica del proyecto — no forma parte de la
-  build de Vite ni se mantiene activamente.
-
----
+- Sin ranking global, cuentas ni sincronización entre dispositivos; borrar los datos del navegador borra el progreso.
+- Diccionario chico (unas 7 a 9 palabras por categoría) y solo en español.
+- En la tienda hay un "Tema: Neón (Próximamente)" que aún no está disponible.
+- El paquete se llama `temp-app` en `package.json` (nombre provisional).
+- `legacy/` es la versión antigua conservada como referencia; no se mantiene.
+- 2 avisos de lint pendientes.
 
 ## 📄 Licencia
 
-Este proyecto está bajo la licencia MIT — ver [`LICENSE`](LICENSE) para el
-texto completo.
+MIT, ver [`LICENSE`](LICENSE).
 
----
-
-<div align="center">
-  <i>"El código debe decir la verdad, y la interfaz debe maravillar a la vista."</i>
-</div>
+<div align="center"><sub>Hecho por Luiss2080 · Santa Cruz de la Sierra, Bolivia</sub></div>
